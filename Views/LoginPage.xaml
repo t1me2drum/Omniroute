@@ -15,9 +15,16 @@
             <TextBox x:Name="EmailBox" Header="Email" PlaceholderText="your@email.com"/>
             <PasswordBox x:Name="PasswordBox" Header="Пароль"/>
 
-            <Button x:Name="LoginButton" Content="Увійти" HorizontalAlignment="Stretch" Click="LoginButton_Click"/>
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Stretch">
+                <Button x:Name="LoginButton" Content="Увійти" HorizontalAlignment="Stretch" Click="LoginButton_Click" Style="{StaticResource AccentButtonStyle}" MinWidth="150"/>
+                <ProgressRing x:Name="ProgressRing" IsActive="False" Width="24" Height="24"/>
+            </StackPanel>
 
             <TextBlock x:Name="ErrorText" Foreground="Red" TextWrapping="Wrap" Visibility="Collapsed"/>
+
+            <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" FontSize="12" Margin="0,16,0,0">
+                Використовуйте email та пароль з офіційного застосунку EcoFlow
+            </TextBlock>
         </StackPanel>
     </Grid>
 </Page>

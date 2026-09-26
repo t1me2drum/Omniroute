@@ -1,0 +1,116 @@
+<Page
+    x:Class="Omniroute.Views.DeviceDetailsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="DeviceNameText" FontSize="24" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="DeviceModelText" FontSize="14" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Border x:Name="OnlineIndicator" Background="{ThemeResource SystemFillColorSuccessBrush}"
+                       CornerRadius="4" Padding="8,4">
+                    <TextBlock Text="Online" FontSize="12" Foreground="White"/>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Padding="16">
+            <StackPanel Spacing="16">
+                <!-- Battery Status -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Статус батареї" FontSize="18" FontWeight="SemiBold"/>
+
+                        <Grid>
+                            <TextBlock x:Name="BatteryLevelText" FontSize="64" FontWeight="Bold" HorizontalAlignment="Center" Text="--"/>
+                        </Grid>
+
+                        <ProgressBar x:Name="BatteryProgress" Maximum="100" Height="8"/>
+
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Вхід" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock x:Name="InputText" Text="-- Вт" FontSize="16" FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Вихід" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock x:Name="OutputText" Text="-- Вт" FontSize="16" FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Сонце" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock x:Name="SolarText" Text="-- Вт" FontSize="16" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Controls -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Керування" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="Елементи керування будуть додані в наступних версіях"
+                                  Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Info -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Інформація" FontSize="18" FontWeight="SemiBold"/>
+                        <StackPanel Spacing="8">
+                            <Grid>
+                                <TextBlock Text="Серійний номер" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock x:Name="SerialNumberText" HorizontalAlignment="Right" Text="--"/>
+                            </Grid>
+                            <Grid>
+                                <TextBlock Text="Температура" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock x:Name="TemperatureText" HorizontalAlignment="Right" Text="--"/>
+                            </Grid>
+                            <Grid>
+                                <TextBlock Text="Цикли заряду" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock x:Name="CyclesText" HorizontalAlignment="Right" Text="--"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

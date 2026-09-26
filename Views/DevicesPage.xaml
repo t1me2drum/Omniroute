@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Omniroute.Models"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -17,14 +18,97 @@
         <Grid Grid.Row="0" Padding="16">
             <TextBlock Text="Мої станції" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
             <CommandBar HorizontalAlignment="Right" DefaultLabelPosition="Right">
-                <AppBarButton Icon="Add" Label="Додати"/>
-                <AppBarButton Icon="Setting" Label="Налаштування"/>
+                <AppBarButton Icon="Refresh" Label="Оновити" Click="RefreshButton_Click"/>
+                <AppBarButton Icon="Add" Label="Додати" Click="AddButton_Click"/>
+                <AppBarButton Icon="Setting" Label="Налаштування" Click="SettingsButton_Click"/>
             </CommandBar>
         </Grid>
 
-        <!-- Devices List -->
-        <GridView Grid.Row="1" x:Name="DevicesGrid" Padding="16" SelectionMode="Single">
-            <!-- TODO: Додати елементи списку станцій -->
-        </GridView>
+        <!-- Content -->
+        <Grid Grid.Row="1">
+            <!-- Loading State -->
+            <StackPanel x:Name="LoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Visibility="Collapsed">
+                <ProgressRing IsActive="True" Width="48" Height="48"/>
+                <TextBlock Text="Завантаження станцій..." FontSize="16"/>
+            </StackPanel>
+
+            <!-- Empty State -->
+            <StackPanel x:Name="EmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Visibility="Collapsed">
+                <FontIcon Glyph="&#xE895;" FontSize="64" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                <TextBlock Text="Немає станцій" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                <TextBlock Text="Додайте свою першу станцію EcoFlow"
+                          Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                          HorizontalAlignment="Center"/>
+                <Button Content="Додати станцію" Click="AddButton_Click" Style="{StaticResource AccentButtonStyle}"/>
+            </StackPanel>
+
+            <!-- Devices Grid -->
+            <ScrollViewer x:Name="DevicesScrollViewer" Padding="16">
+                <ItemsRepeater x:Name="DevicesRepeater" ItemsSource="{x:Bind Devices}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout MinItemWidth="300" MinItemHeight="200" ItemsStretch="Fill"/>
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:Device">
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                   BorderThickness="1"
+                                   CornerRadius="8"
+                                   Margin="4"
+                                   Padding="16">
+                                <Border.Shadow>
+                                    <ThemeShadow />
+                                </Border.Shadow>
+                                <Grid RowSpacing="12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Device Header -->
+                                    <Grid Grid.Row="0">
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind Name}" FontSize="18" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{x:Bind Model}" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
+                                            <Border Background="{ThemeResource SystemFillColorSuccessBrush}"
+                                                   CornerRadius="4" Padding="8,4" Visibility="{x:Bind IsOnline}">
+                                                <TextBlock Text="●" FontSize="10" Foreground="White"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Battery Level -->
+                                    <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="8">
+                                        <TextBlock Text="{x:Bind BatteryLevel}" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                        <ProgressBar Value="{x:Bind BatteryLevel}" Maximum="100" HorizontalAlignment="Stretch"/>
+
+                                        <Grid ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Вхід" FontSize="10" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                                <TextBlock Text="{x:Bind InputWatts}" FontSize="14" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Вихід" FontSize="10" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                                <TextBlock Text="{x:Bind OutputWatts}" FontSize="14" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Actions -->
+                                    <Button Grid.Row="2" Content="Детальніше" HorizontalAlignment="Stretch" Click="DeviceButton_Click" Tag="{x:Bind SerialNumber}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>

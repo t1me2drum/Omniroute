@@ -1,0 +1,106 @@
+<Page
+    x:Class="Omniroute.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
+                <TextBlock Text="Налаштування" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Padding="16">
+            <StackPanel Spacing="16">
+                <!-- Account -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Акаунт" FontSize="18" FontWeight="SemiBold"/>
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="EmailText" Text="Email: --" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                            <Button Content="Вийти" Click="LogoutButton_Click" Style="{StaticResource AccentButtonStyle}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Theme -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Вигляд" FontSize="18" FontWeight="SemiBold"/>
+                        <ComboBox x:Name="ThemeComboBox" Header="Тема" SelectionChanged="ThemeComboBox_SelectionChanged" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="Світла" Tag="Light"/>
+                            <ComboBoxItem Content="Темна" Tag="Dark"/>
+                            <ComboBoxItem Content="Системна" Tag="System" IsSelected="True"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- Notifications -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Сповіщення" FontSize="18" FontWeight="SemiBold"/>
+                        <ToggleSwitch x:Name="NotificationsToggle" Header="Увімкнути сповіщення" IsOn="True" Toggled="NotificationsToggle_Toggled"/>
+                        <ToggleSwitch x:Name="PowerLossToggle" Header="Відключення живлення" IsOn="True"/>
+                        <ToggleSwitch x:Name="LowBatteryToggle" Header="Низький заряд" IsOn="True"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- API Keys -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="EcoFlow Developer API" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}">
+                            Для автоматичної синхронізації станцій введіть ключі з developer.ecoflow.com
+                        </TextBlock>
+                        <TextBox x:Name="AccessKeyBox" Header="Access Key" PlaceholderText="Введіть Access Key"/>
+                        <PasswordBox x:Name="SecretKeyBox" Header="Secret Key" PlaceholderText="Введіть Secret Key"/>
+                        <Button Content="Зберегти ключі" Click="SaveKeysButton_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- About -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Про застосунок" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="Omniroute v0.1.0" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                        <TextBlock Text="Windows клієнт для моніторингу EcoFlow станцій"
+                                  TextWrapping="Wrap"
+                                  Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
