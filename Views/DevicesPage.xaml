@@ -1,0 +1,30 @@
+<Page
+    x:Class="Omniroute.Views.DevicesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="16">
+            <TextBlock Text="Мої станції" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <CommandBar HorizontalAlignment="Right" DefaultLabelPosition="Right">
+                <AppBarButton Icon="Add" Label="Додати"/>
+                <AppBarButton Icon="Setting" Label="Налаштування"/>
+            </CommandBar>
+        </Grid>
+
+        <!-- Devices List -->
+        <GridView Grid.Row="1" x:Name="DevicesGrid" Padding="16" SelectionMode="Single">
+            <!-- TODO: Додати елементи списку станцій -->
+        </GridView>
+    </Grid>
+</Page>
