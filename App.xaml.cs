@@ -20,6 +20,9 @@ public partial class App : Application
         // Ініціалізація Repository
         Repository = new Repository();
 
+        // Ініціалізація сповіщень
+        NotificationService.Initialize();
+
         _window = new MainWindow();
         _window.Activate();
 
