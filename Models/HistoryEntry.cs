@@ -1,3 +1,5 @@
+using System;
+
 namespace Omniroute.Models;
 
 /// <summary>

@@ -8,7 +8,8 @@ public class AppSettings
     // Тема
     public ThemeMode Theme { get; set; } = ThemeMode.System;
 
-    // API ключі EcoFlow Developer
+    // Застаріле: ключі Developer API раніше зберігалися тут відкритим текстом.
+    // Під час запуску вони переносяться в зашифрований CredentialStore і очищаються.
     public string? AccessKey { get; set; }
     public string? SecretKey { get; set; }
 

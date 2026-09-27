@@ -1,23 +1,31 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MQTTnet;
+using MQTTnet.Adapter;
 using MQTTnet.Client;
-using MQTTnet.Extensions.ManagedClient;
-using System.Collections.Concurrent;
+using MQTTnet.Protocol;
 
 namespace Omniroute.Api;
 
 /// <summary>
 /// MQTT клієнт для підключення до EcoFlow брокера
-/// Підтримує автоматичне перепідключення та повторну підписку на топіки
+/// Після першого успішного підключення сам перепідключається та повторно підписується на топіки
 /// </summary>
 public class MqttLink : IDisposable
 {
-    private readonly MqttCredentials _credentials;
-    private readonly string _userId;
-    private readonly IManagedMqttClient _client;
-    private readonly ConcurrentDictionary<string, byte> _topics = new();
+    private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(5);
+
+    private readonly IMqttClient _client;
+    private readonly MqttClientOptions _options;
+    private readonly HashSet<string> _topics = new();
     private readonly Action<string, byte[]> _onMessage;
     private readonly Action<bool> _onConnected;
     private readonly Action<string> _onFatal;
+    private readonly CancellationTokenSource _cts = new();
+    private int _disposed;
 
     public bool IsConnected => _client.IsConnected;
 
@@ -28,51 +36,43 @@ public class MqttLink : IDisposable
         Action<bool> onConnected,
         Action<string> onFatal)
     {
-        _credentials = credentials;
-        _userId = userId;
         _onMessage = onMessage;
         _onConnected = onConnected;
         _onFatal = onFatal;
 
-        _client = new MqttFactory().CreateManagedMqttClient();
+        // Брокер приймає лише ClientId у форматі офіційного застосунку
+        var clientId = $"ANDROID_{Guid.NewGuid():N}".ToUpperInvariant() + $"_{userId}";
+
+        _options = new MqttClientOptionsBuilder()
+            .WithTcpServer(credentials.Host, credentials.Port)
+            .WithCredentials(credentials.Username, credentials.Password)
+            .WithClientId(clientId)
+            .WithTlsOptions(o => o.UseTls())
+            .WithCleanSession()
+            .WithKeepAlivePeriod(TimeSpan.FromSeconds(30))
+            .WithTimeout(TimeSpan.FromSeconds(20))
+            .Build();
+
+        _client = new MqttFactory().CreateMqttClient();
 
         // Обробники подій
         _client.ConnectedAsync += OnConnectedAsync;
         _client.DisconnectedAsync += OnDisconnectedAsync;
         _client.ApplicationMessageReceivedAsync += OnMessageReceivedAsync;
-        _client.ConnectingFailedAsync += OnConnectingFailedAsync;
     }
 
     /// <summary>
-    /// Підключитися до MQTT брокера
+    /// Підключитися до MQTT брокера. Помилка першого підключення викидається назовні.
     /// </summary>
     public async Task ConnectAsync(IEnumerable<string> initialTopics)
     {
-        // Зберегти початкові топіки
-        foreach (var topic in initialTopics)
+        lock (_topics)
         {
-            _topics.TryAdd(topic, 0);
+            _topics.UnionWith(initialTopics);
         }
 
-        // Створити ClientId у форматі офіційного застосунку
-        var clientId = $"WINDOWS_{Guid.NewGuid():N}".ToUpperInvariant() + $"_{_userId}";
-
-        // Налаштування підключення
-        var clientOptions = new MqttClientOptionsBuilder()
-            .WithTcpServer(_credentials.Host, _credentials.Port)
-            .WithCredentials(_credentials.Username, _credentials.Password)
-            .WithClientId(clientId)
-            .WithTls()
-            .WithCleanSession()
-            .WithKeepAlivePeriod(TimeSpan.FromSeconds(30))
-            .Build();
-
-        var managedOptions = new ManagedMqttClientOptionsBuilder()
-            .WithClientOptions(clientOptions)
-            .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-            .Build();
-
-        await _client.StartAsync(managedOptions);
+        await _client.ConnectAsync(_options, _cts.Token);
+        _ = Task.Run(() => ReconnectLoopAsync(_cts.Token));
     }
 
     /// <summary>
@@ -80,23 +80,15 @@ public class MqttLink : IDisposable
     /// </summary>
     public async Task SubscribeAsync(IEnumerable<string> newTopics)
     {
-        var added = new List<string>();
-        foreach (var topic in newTopics)
+        List<string> added;
+        lock (_topics)
         {
-            if (_topics.TryAdd(topic, 0))
-            {
-                added.Add(topic);
-            }
+            added = newTopics.Where(_topics.Add).ToList();
         }
 
         if (added.Count > 0 && _client.IsConnected)
         {
-            await _client.SubscribeAsync(added.Select(t =>
-                new MqttTopicFilterBuilder()
-                    .WithTopic(t)
-                    .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
-                    .Build()
-            ));
+            await SubscribeTopicsAsync(added);
         }
     }
 
@@ -105,18 +97,20 @@ public class MqttLink : IDisposable
     /// </summary>
     public async Task UnsubscribeAsync(IEnumerable<string> oldTopics)
     {
-        var removed = new List<string>();
-        foreach (var topic in oldTopics)
+        List<string> removed;
+        lock (_topics)
         {
-            if (_topics.TryRemove(topic, out _))
-            {
-                removed.Add(topic);
-            }
+            removed = oldTopics.Where(_topics.Remove).ToList();
         }
 
         if (removed.Count > 0 && _client.IsConnected)
         {
-            await _client.UnsubscribeAsync(removed);
+            var builder = new MqttClientUnsubscribeOptionsBuilder();
+            foreach (var topic in removed)
+            {
+                builder.WithTopicFilter(topic);
+            }
+            await _client.UnsubscribeAsync(builder.Build(), _cts.Token);
         }
     }
 
@@ -133,10 +127,10 @@ public class MqttLink : IDisposable
             var message = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithPayload(payload)
-                .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
+                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
                 .Build();
 
-            await _client.EnqueueAsync(message);
+            await _client.PublishAsync(message, _cts.Token);
             return true;
         }
         catch (Exception ex)
@@ -146,28 +140,86 @@ public class MqttLink : IDisposable
         }
     }
 
+    private async Task SubscribeTopicsAsync(IReadOnlyCollection<string> topics)
+    {
+        // Кожен топік — окремий фільтр
+        var builder = new MqttClientSubscribeOptionsBuilder();
+        foreach (var topic in topics)
+        {
+            builder.WithTopicFilter(f => f
+                .WithTopic(topic)
+                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce));
+        }
+        await _client.SubscribeAsync(builder.Build(), _cts.Token);
+    }
+
+    /// <summary>
+    /// Перевіряє з'єднання й перепідключається, доки клієнт не закрито
+    /// </summary>
+    private async Task ReconnectLoopAsync(CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(ReconnectDelay, token);
+                if (_client.IsConnected)
+                    continue;
+
+                await _client.ConnectAsync(_options, token);
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (MqttConnectingFailedException ex) when (IsAuthFailure(ex.ResultCode))
+            {
+                // Облікові дані MQTT більше не дійсні: повторні спроби не допоможуть
+                _onFatal("MQTT: доступ заборонено");
+                return;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"MQTT reconnect failed: {ex.Message}");
+            }
+        }
+    }
+
+    public static bool IsAuthFailure(MqttClientConnectResultCode code) =>
+        code is MqttClientConnectResultCode.BadUserNameOrPassword or MqttClientConnectResultCode.NotAuthorized;
+
     private async Task OnConnectedAsync(MqttClientConnectedEventArgs e)
     {
         System.Diagnostics.Debug.WriteLine("MQTT connected");
         _onConnected(true);
 
-        // Повторно підписатися на всі топіки
-        var allTopics = _topics.Keys.ToList();
+        // Повторно підписатися на всі топіки (сесія чиста після кожного підключення)
+        List<string> allTopics;
+        lock (_topics)
+        {
+            allTopics = _topics.ToList();
+        }
+
         if (allTopics.Count > 0)
         {
-            await _client.SubscribeAsync(allTopics.Select(t =>
-                new MqttTopicFilterBuilder()
-                    .WithTopic(t)
-                    .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
-                    .Build()
-            ));
+            try
+            {
+                await SubscribeTopicsAsync(allTopics);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"MQTT resubscribe failed: {ex.Message}");
+            }
         }
     }
 
     private Task OnDisconnectedAsync(MqttClientDisconnectedEventArgs e)
     {
-        System.Diagnostics.Debug.WriteLine($"MQTT disconnected: {e.Reason}");
-        _onConnected(false);
+        if (e.ClientWasConnected)
+        {
+            System.Diagnostics.Debug.WriteLine($"MQTT disconnected: {e.Reason}");
+            _onConnected(false);
+        }
         return Task.CompletedTask;
     }
 
@@ -184,31 +236,29 @@ public class MqttLink : IDisposable
         return Task.CompletedTask;
     }
 
-    private Task OnConnectingFailedAsync(ConnectingFailedEventArgs e)
+    public void Dispose()
     {
-        var exception = e.Exception;
-        System.Diagnostics.Debug.WriteLine($"MQTT connection failed: {exception?.Message}");
+        if (Interlocked.Exchange(ref _disposed, 1) == 1)
+            return;
 
-        // Перевірка на помилки автентифікації
-        if (exception?.Message?.Contains("authentication", StringComparison.OrdinalIgnoreCase) == true ||
-            exception?.Message?.Contains("not authorized", StringComparison.OrdinalIgnoreCase) == true)
+        _cts.Cancel();
+        _client.ConnectedAsync -= OnConnectedAsync;
+        _client.DisconnectedAsync -= OnDisconnectedAsync;
+        _client.ApplicationMessageReceivedAsync -= OnMessageReceivedAsync;
+
+        // Коректно відключитися, але не чекати довше 3 с
+        try
         {
-            _onFatal("MQTT: доступ заборонено");
+            if (_client.IsConnected)
+            {
+                _client.DisconnectAsync().Wait(TimeSpan.FromSeconds(3));
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _onFatal($"MQTT: {exception?.Message ?? "не вдалося підключитися"}");
+            System.Diagnostics.Debug.WriteLine($"MQTT disconnect failed: {ex.Message}");
         }
 
-        return Task.CompletedTask;
-    }
-
-    public async void Dispose()
-    {
-        if (_client.IsConnected)
-        {
-            await _client.StopAsync();
-        }
-        _client?.Dispose();
+        _client.Dispose();
     }
 }

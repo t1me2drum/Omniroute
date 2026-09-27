@@ -1,28 +1,60 @@
+using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
 namespace Omniroute.Protocol;
 
 /// <summary>
-/// Парсер JSON повідомлень для Delta 2 і подібних протоколів
+/// JSON формат MQTT повідомлень для Delta 2 і подібних протоколів
 /// </summary>
 public static class JsonMessages
 {
     /// <summary>
-    /// Розпарсити JSON payload в параметри
+    /// Ідентифікатор повідомлення у форматі офіційного застосунку
+    /// </summary>
+    private static string Seq() => (999_900_000 + Random.Shared.Next(10_000, 99_999)).ToString();
+
+    /// <summary>
+    /// Protobuf кадри починаються з 0x0A, тож JSON визначаємо за першим байтом '{'
+    /// </summary>
+    public static bool LooksLikeJson(byte[] payload) =>
+        payload.Length > 0 && payload[0] == (byte)'{';
+
+    /// <summary>
+    /// Розпарсити JSON payload в параметри.
+    /// Телеметрія: {"params": {"pd.soc": 80, ...}}
+    /// Відповідь на запит стану: {"operateType": "latestQuotas", "data": {"online": 1, "quotaMap": {...}}}
     /// </summary>
     public static DeviceParams Parse(byte[] payload)
     {
         var result = new DeviceParams();
+        if (!LooksLikeJson(payload))
+            return result;
 
         try
         {
-            var json = Encoding.UTF8.GetString(payload);
-            using var document = JsonDocument.Parse(json);
+            using var document = JsonDocument.Parse(payload);
             var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+                return result;
 
-            // Рекурсивно обійти всі поля з префіксом
-            ParseObject(root, "", result);
+            if (root.TryGetProperty("operateType", out var op) &&
+                op.ValueKind == JsonValueKind.String &&
+                op.GetString() == "latestQuotas")
+            {
+                if (!root.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object)
+                    return result;
+                if (!data.TryGetProperty("online", out var online) ||
+                    online.ValueKind != JsonValueKind.Number || online.GetInt32() != 1)
+                    return result;
+                if (data.TryGetProperty("quotaMap", out var quotaMap))
+                    Flatten(quotaMap, "", result);
+                return result;
+            }
+
+            if (root.TryGetProperty("params", out var parameters))
+                Flatten(parameters, "", result);
         }
         catch (Exception ex)
         {
@@ -32,22 +64,22 @@ public static class JsonMessages
         return result;
     }
 
-    private static void ParseObject(JsonElement element, string prefix, DeviceParams result)
+    private static void Flatten(JsonElement element, string prefix, DeviceParams result)
     {
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            foreach (var property in element.EnumerateObject())
-            {
-                var key = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}.{property.Name}";
+        if (element.ValueKind != JsonValueKind.Object)
+            return;
 
-                if (property.Value.ValueKind == JsonValueKind.Object)
-                {
-                    ParseObject(property.Value, key, result);
-                }
-                else
-                {
-                    result[key] = GetValue(property.Value);
-                }
+        foreach (var property in element.EnumerateObject())
+        {
+            var key = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}.{property.Name}";
+
+            if (property.Value.ValueKind == JsonValueKind.Object)
+            {
+                Flatten(property.Value, key, result);
+            }
+            else
+            {
+                result[key] = GetValue(property.Value);
             }
         }
     }
@@ -60,9 +92,19 @@ public static class JsonMessages
             JsonValueKind.String => element.GetString(),
             JsonValueKind.True => true,
             JsonValueKind.False => false,
-            JsonValueKind.Null => null,
+            JsonValueKind.Array => ParseArray(element),
             _ => null
         };
+    }
+
+    private static List<object?> ParseArray(JsonElement element)
+    {
+        var list = new List<object?>();
+        foreach (var item in element.EnumerateArray())
+        {
+            list.Add(GetValue(item));
+        }
+        return list;
     }
 
     /// <summary>
@@ -70,32 +112,26 @@ public static class JsonMessages
     /// </summary>
     public static OutgoingMessage LatestQuotas()
     {
-        var json = JsonSerializer.Serialize(new
-        {
-            from = "iOS",
-            lang = "en-us",
-            id = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(),
-            moduleType = 0,
-            operateType = "latestQuotas",
-            version = "1.0"
-        });
-
-        return new OutgoingMessage(Encoding.UTF8.GetBytes(json));
+        return Command(0, "latestQuotas", new Dictionary<string, object>(), version: "1.1");
     }
 
     /// <summary>
     /// Створити команду керування
     /// </summary>
-    public static OutgoingMessage Command(int moduleType, string operateType, Dictionary<string, object> parameters, string? moduleSn = null)
+    public static OutgoingMessage Command(
+        int moduleType,
+        string operateType,
+        Dictionary<string, object> parameters,
+        string? moduleSn = null,
+        string version = "1.0")
     {
         var payload = new Dictionary<string, object>
         {
-            ["from"] = "iOS",
-            ["lang"] = "en-us",
-            ["id"] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(),
+            ["from"] = "Android",
+            ["id"] = Seq(),
+            ["version"] = version,
             ["moduleType"] = moduleType,
             ["operateType"] = operateType,
-            ["version"] = "1.0",
             ["params"] = parameters
         };
 

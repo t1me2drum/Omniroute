@@ -1,3 +1,4 @@
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Omniroute.Data;
 using Omniroute.Services;
@@ -7,7 +8,7 @@ namespace Omniroute;
 
 public partial class App : Application
 {
-    private Window? _window;
+    public static MainWindow? MainWindow { get; private set; }
     public static Repository Repository { get; private set; } = null!;
 
     public App()
@@ -23,8 +24,12 @@ public partial class App : Application
         // Ініціалізація сповіщень
         NotificationService.Initialize();
 
-        _window = new MainWindow();
-        _window.Activate();
+        // Моніторинг оновлює станції та показує сповіщення в UI-потоці
+        MonitorService.Initialize(DispatcherQueue.GetForCurrentThread());
+
+        MainWindow = new MainWindow();
+        MainWindow.ApplyTheme(Repository.Settings.Theme);
+        MainWindow.Activate();
 
         // Запуск фонового моніторингу якщо користувач авторизований
         if (Repository.IsLoggedIn)

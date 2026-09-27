@@ -77,3 +77,6 @@ _pkginfo.txt
 
 ## Publish profiles
 PublishProfiles/
+
+## Certificates
+*.pfx

@@ -1,28 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Omniroute.Models;
 
 namespace Omniroute.Data;
 
 /// <summary>
-/// Контекст бази даних для історії
+/// Контекст бази даних для історії.
+/// DbContext не потокобезпечний, тому на кожну операцію створюється новий екземпляр.
 /// </summary>
 public class HistoryDbContext : DbContext
 {
-    private readonly string _dbPath;
+    private static readonly string DbPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "Omniroute",
+        "history.db");
 
     public DbSet<HistoryEntry> History { get; set; } = null!;
 
-    public HistoryDbContext()
-    {
-        var folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var appFolder = Path.Combine(folder, "Omniroute");
-        Directory.CreateDirectory(appFolder);
-        _dbPath = Path.Combine(appFolder, "history.db");
-    }
-
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
-        options.UseSqlite($"Data Source={_dbPath}");
+        options.UseSqlite($"Data Source={DbPath}");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -31,38 +32,49 @@ public class HistoryDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => new { e.SerialNumber, e.Timestamp });
-            entity.Property(e => e.Timestamp).HasDefaultValueSql("datetime('now')");
         });
+    }
+
+    /// <summary>
+    /// Створити файл і схему бази, якщо їх ще немає
+    /// </summary>
+    public static void EnsureCreated()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(DbPath)!);
+        using var db = new HistoryDbContext();
+        db.Database.EnsureCreated();
     }
 
     /// <summary>
     /// Додати запис телеметрії
     /// </summary>
-    public async Task AddEntryAsync(HistoryEntry entry)
+    public static async Task AddEntryAsync(HistoryEntry entry)
     {
-        History.Add(entry);
-        await SaveChangesAsync();
+        await using var db = new HistoryDbContext();
+        db.History.Add(entry);
+        await db.SaveChangesAsync();
     }
 
     /// <summary>
     /// Отримати історію для пристрою за період
     /// </summary>
-    public async Task<List<HistoryEntry>> GetHistoryAsync(string serialNumber, DateTime from, DateTime to)
+    public static async Task<List<HistoryEntry>> GetHistoryAsync(string serialNumber, DateTime from, DateTime to)
     {
-        return await History
+        await using var db = new HistoryDbContext();
+        return await db.History
+            .AsNoTracking()
             .Where(h => h.SerialNumber == serialNumber && h.Timestamp >= from && h.Timestamp <= to)
             .OrderBy(h => h.Timestamp)
             .ToListAsync();
     }
 
     /// <summary>
-    /// Очистити стару історію (старше 30 днів)
+    /// Видалити записи, старші за вказану кількість днів (без завантаження в пам'ять)
     /// </summary>
-    public async Task CleanupOldEntriesAsync()
+    public static async Task<int> CleanupOldEntriesAsync(int keepDays = 30)
     {
-        var threshold = DateTime.Now.AddDays(-30);
-        var oldEntries = History.Where(h => h.Timestamp < threshold);
-        History.RemoveRange(oldEntries);
-        await SaveChangesAsync();
+        var threshold = DateTime.Now.AddDays(-keepDays);
+        await using var db = new HistoryDbContext();
+        return await db.History.Where(h => h.Timestamp < threshold).ExecuteDeleteAsync();
     }
 }

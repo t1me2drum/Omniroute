@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Text.Json;
 using Omniroute.Models;
 using Windows.Storage;
@@ -6,7 +6,7 @@ using Windows.Storage;
 namespace Omniroute.Data;
 
 /// <summary>
-/// Зберігання списку пристроїв
+/// Зберігання списку пристроїв (тільки ідентифікація й налаштування, без телеметрії)
 /// </summary>
 public class DeviceStore
 {
@@ -21,21 +21,20 @@ public class DeviceStore
     /// <summary>
     /// Завантажити список пристроїв
     /// </summary>
-    public ObservableCollection<Device> LoadDevices()
+    public List<Device> LoadDevices()
     {
         if (_settings.Values.TryGetValue(DevicesKey, out var value) && value is string json)
         {
             try
             {
-                var devices = JsonSerializer.Deserialize<List<Device>>(json) ?? new List<Device>();
-                return new ObservableCollection<Device>(devices);
+                return JsonSerializer.Deserialize<List<Device>>(json) ?? new List<Device>();
             }
             catch
             {
-                return new ObservableCollection<Device>();
+                return new List<Device>();
             }
         }
-        return new ObservableCollection<Device>();
+        return new List<Device>();
     }
 
     /// <summary>
@@ -43,38 +42,6 @@ public class DeviceStore
     /// </summary>
     public void SaveDevices(IEnumerable<Device> devices)
     {
-        var json = JsonSerializer.Serialize(devices);
-        _settings.Values[DevicesKey] = json;
-    }
-
-    /// <summary>
-    /// Додати або оновити пристрій
-    /// </summary>
-    public void SaveDevice(Device device, ObservableCollection<Device> devices)
-    {
-        var existing = devices.FirstOrDefault(d => d.SerialNumber == device.SerialNumber);
-        if (existing != null)
-        {
-            var index = devices.IndexOf(existing);
-            devices[index] = device;
-        }
-        else
-        {
-            devices.Add(device);
-        }
-        SaveDevices(devices);
-    }
-
-    /// <summary>
-    /// Видалити пристрій
-    /// </summary>
-    public void RemoveDevice(string serialNumber, ObservableCollection<Device> devices)
-    {
-        var device = devices.FirstOrDefault(d => d.SerialNumber == serialNumber);
-        if (device != null)
-        {
-            device.IsDeleted = true;
-            SaveDevices(devices);
-        }
+        _settings.Values[DevicesKey] = JsonSerializer.Serialize(devices);
     }
 }

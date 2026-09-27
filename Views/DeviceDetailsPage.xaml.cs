@@ -1,3 +1,5 @@
+using System;
+using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -26,6 +28,16 @@ public sealed partial class DeviceDetailsPage : Page
         }
     }
 
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+
+        if (_device != null)
+        {
+            _device.PropertyChanged -= Device_PropertyChanged;
+        }
+    }
+
     private void LoadDevice()
     {
         if (string.IsNullOrEmpty(_serialNumber))
@@ -36,17 +48,22 @@ public sealed partial class DeviceDetailsPage : Page
         if (_device == null)
         {
             // Пристрій не знайдено
-            Frame.GoBack();
+            if (Frame.CanGoBack)
+                Frame.GoBack();
             return;
         }
 
         // Оновити UI
         DeviceNameText.Text = _device.Name;
-        DeviceModelText.Text = DeviceModelExtensions.GetDisplayName(_device.Model);
+        DeviceModelText.Text = _device.Model.GetDisplayName();
         SerialNumberText.Text = _device.SerialNumber;
 
+        // Телеметрія оновлюється MonitorService в UI-потоці
+        _device.PropertyChanged += Device_PropertyChanged;
         UpdateDeviceState();
     }
+
+    private void Device_PropertyChanged(object? sender, PropertyChangedEventArgs e) => UpdateDeviceState();
 
     private void UpdateDeviceState()
     {
@@ -57,21 +74,22 @@ public sealed partial class DeviceDetailsPage : Page
         OnlineIndicator.Visibility = _device.IsOnline ? Visibility.Visible : Visibility.Collapsed;
 
         // Батарея
-        BatteryLevelText.Text = _device.BatteryLevel > 0 ? $"{_device.BatteryLevel}%" : "--";
-        BatteryProgress.Value = _device.BatteryLevel;
+        BatteryLevelText.Text = _device.BatteryText;
+        BatteryProgress.Value = _device.BatteryPercent;
 
         // Потужності
-        InputText.Text = _device.InputWatts.HasValue ? $"{_device.InputWatts} Вт" : "-- Вт";
-        OutputText.Text = _device.OutputWatts.HasValue ? $"{_device.OutputWatts} Вт" : "-- Вт";
-        SolarText.Text = "-- Вт"; // TODO: додати сонячну потужність
+        InputText.Text = _device.InputText;
+        OutputText.Text = _device.OutputText;
+        SolarText.Text = Device.FormatWatts(_device.SolarWatts);
 
         // Інфо
         TemperatureText.Text = _device.Temperature.HasValue ? $"{_device.Temperature}°C" : "--";
-        CyclesText.Text = "--"; // TODO: додати цикли
+        CyclesText.Text = _device.Cycles?.ToString() ?? "--";
     }
 
     private void BackButton_Click(object sender, RoutedEventArgs e)
     {
-        Frame.GoBack();
+        if (Frame.CanGoBack)
+            Frame.GoBack();
     }
 }

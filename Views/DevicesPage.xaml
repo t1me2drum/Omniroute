@@ -16,7 +16,10 @@
 
         <!-- Header -->
         <Grid Grid.Row="0" Padding="16">
-            <TextBlock Text="Мої станції" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Мої станції" FontSize="24" FontWeight="SemiBold"/>
+                <TextBlock x:Name="StatusText" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+            </StackPanel>
             <CommandBar HorizontalAlignment="Right" DefaultLabelPosition="Right">
                 <AppBarButton Icon="Refresh" Label="Оновити" Click="RefreshButton_Click"/>
                 <AppBarButton Icon="Add" Label="Додати" Click="AddButton_Click"/>
@@ -70,11 +73,11 @@
                                     <Grid Grid.Row="0">
                                         <StackPanel>
                                             <TextBlock Text="{x:Bind Name}" FontSize="18" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{x:Bind Model}" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                            <TextBlock Text="{x:Bind ModelName}" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
                                             <Border Background="{ThemeResource SystemFillColorSuccessBrush}"
-                                                   CornerRadius="4" Padding="8,4" Visibility="{x:Bind IsOnline}">
+                                                   CornerRadius="4" Padding="8,4" Visibility="{x:Bind IsOnline, Mode=OneWay}">
                                                 <TextBlock Text="●" FontSize="10" Foreground="White"/>
                                             </Border>
                                         </StackPanel>
@@ -82,8 +85,8 @@
 
                                     <!-- Battery Level -->
                                     <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="8">
-                                        <TextBlock Text="{x:Bind BatteryLevel}" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                        <ProgressBar Value="{x:Bind BatteryLevel}" Maximum="100" HorizontalAlignment="Stretch"/>
+                                        <TextBlock Text="{x:Bind BatteryText, Mode=OneWay}" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                        <ProgressBar Value="{x:Bind BatteryPercent, Mode=OneWay}" Maximum="100" HorizontalAlignment="Stretch"/>
 
                                         <Grid ColumnSpacing="16">
                                             <Grid.ColumnDefinitions>
@@ -92,11 +95,11 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0">
                                                 <TextBlock Text="Вхід" FontSize="10" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                                <TextBlock Text="{x:Bind InputWatts}" FontSize="14" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{x:Bind InputText, Mode=OneWay}" FontSize="14" FontWeight="SemiBold"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1">
                                                 <TextBlock Text="Вихід" FontSize="10" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                                <TextBlock Text="{x:Bind OutputWatts}" FontSize="14" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{x:Bind OutputText, Mode=OneWay}" FontSize="14" FontWeight="SemiBold"/>
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>

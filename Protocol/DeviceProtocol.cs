@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Omniroute.Protocol;
@@ -5,7 +6,12 @@ namespace Omniroute.Protocol;
 /// <summary>
 /// Параметри пристрою (плоский словник ключ-значення)
 /// </summary>
-public class DeviceParams : Dictionary<string, object?> { }
+public class DeviceParams : Dictionary<string, object?>
+{
+    public DeviceParams() { }
+
+    public DeviceParams(IDictionary<string, object?> source) : base(source) { }
+}
 
 /// <summary>
 /// Тип MQTT топіку

@@ -1,3 +1,4 @@
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -7,7 +8,7 @@ using Windows.Storage;
 namespace Omniroute.Data;
 
 /// <summary>
-/// Зберігання облікових даних користувача
+/// Зберігання облікових даних користувача (шифрування DPAPI для поточного користувача Windows)
 /// </summary>
 public class CredentialStore
 {
@@ -25,8 +26,7 @@ public class CredentialStore
     public void SaveCredentials(Credentials credentials)
     {
         var json = JsonSerializer.Serialize(credentials);
-        var encrypted = ProtectData(json);
-        _settings.Values[CredentialsKey] = encrypted;
+        _settings.Values[CredentialsKey] = ProtectData(json);
     }
 
     /// <summary>
@@ -38,8 +38,8 @@ public class CredentialStore
         {
             try
             {
-                var json = UnprotectData(encrypted);
-                return JsonSerializer.Deserialize<Credentials>(json);
+                var credentials = JsonSerializer.Deserialize<Credentials>(UnprotectData(encrypted));
+                return string.IsNullOrEmpty(credentials?.Email) ? null : credentials;
             }
             catch
             {
@@ -57,20 +57,14 @@ public class CredentialStore
         _settings.Values.Remove(CredentialsKey);
     }
 
-    /// <summary>
-    /// Захист даних (шифрування)
-    /// </summary>
-    private string ProtectData(string data)
+    private static string ProtectData(string data)
     {
         var bytes = Encoding.UTF8.GetBytes(data);
-        var protected = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
-        return Convert.ToBase64String(protected);
+        var protectedBytes = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
+        return Convert.ToBase64String(protectedBytes);
     }
 
-    /// <summary>
-    /// Розшифрування даних
-    /// </summary>
-    private string UnprotectData(string encryptedData)
+    private static string UnprotectData(string encryptedData)
     {
         var bytes = Convert.FromBase64String(encryptedData);
         var unprotected = ProtectedData.Unprotect(bytes, null, DataProtectionScope.CurrentUser);

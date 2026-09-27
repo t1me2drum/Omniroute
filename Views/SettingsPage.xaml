@@ -64,8 +64,10 @@
                     <StackPanel Spacing="12">
                         <TextBlock Text="Сповіщення" FontSize="18" FontWeight="SemiBold"/>
                         <ToggleSwitch x:Name="NotificationsToggle" Header="Увімкнути сповіщення" IsOn="True" Toggled="NotificationsToggle_Toggled"/>
-                        <ToggleSwitch x:Name="PowerLossToggle" Header="Відключення живлення" IsOn="True"/>
-                        <ToggleSwitch x:Name="LowBatteryToggle" Header="Низький заряд" IsOn="True"/>
+                        <ToggleSwitch x:Name="PowerLossToggle" Header="Відключення живлення" IsOn="True" Toggled="PowerLossToggle_Toggled"/>
+                        <ToggleSwitch x:Name="LowBatteryToggle" Header="Низький заряд" IsOn="True" Toggled="LowBatteryToggle_Toggled"/>
+                        <ToggleSwitch x:Name="FullChargeToggle" Header="Повний заряд" IsOn="False" Toggled="FullChargeToggle_Toggled"/>
+                        <ToggleSwitch x:Name="OfflineToggle" Header="Станція не на зв'язку" IsOn="True" Toggled="OfflineToggle_Toggled"/>
                     </StackPanel>
                 </Border>
 
@@ -82,7 +84,10 @@
                         </TextBlock>
                         <TextBox x:Name="AccessKeyBox" Header="Access Key" PlaceholderText="Введіть Access Key"/>
                         <PasswordBox x:Name="SecretKeyBox" Header="Secret Key" PlaceholderText="Введіть Secret Key"/>
-                        <Button Content="Зберегти ключі" Click="SaveKeysButton_Click"/>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Button x:Name="SaveKeysButton" Content="Зберегти ключі" Click="SaveKeysButton_Click"/>
+                            <ProgressRing x:Name="KeysProgress" IsActive="False" Width="20" Height="20"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

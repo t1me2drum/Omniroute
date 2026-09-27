@@ -1,5 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
+using Omniroute.Models;
+using Omniroute.Protocol;
 
 namespace Omniroute.Services;
 
@@ -9,6 +13,20 @@ namespace Omniroute.Services;
 public static class NotificationService
 {
     private static bool _isInitialized = false;
+
+    /// <summary>
+    /// Пам'ять правил для кожної станції: правило спрацьовує один раз, коли умова стає істинною,
+    /// і знову «озброюється» лише після того, як умова зникне (для заряду — з гістерезисом)
+    /// </summary>
+    private sealed class AlertMemory
+    {
+        public bool LowFired;
+        public bool FullFired;
+        public bool? Grid;
+        public bool? Online;
+    }
+
+    private static readonly Dictionary<string, AlertMemory> _memory = new();
 
     /// <summary>
     /// Ініціалізувати сервіс сповіщень
@@ -33,20 +51,85 @@ public static class NotificationService
     }
 
     /// <summary>
+    /// Перевірити правила сповіщень для нового стану станції.
+    /// Викликається з UI-потоку MonitorService.
+    /// </summary>
+    public static void Evaluate(Device device, DeviceState state, bool online)
+    {
+        if (!_memory.TryGetValue(device.SerialNumber, out var m))
+        {
+            m = new AlertMemory();
+            _memory[device.SerialNumber] = m;
+        }
+
+        var settings = App.Repository.Settings;
+        var soc = state.Soc;
+
+        if (online && soc.HasValue)
+        {
+            if (soc <= settings.LowBatteryThreshold && !m.LowFired)
+            {
+                m.LowFired = true;
+                ShowLowBatteryNotification(device.Name, soc.Value);
+            }
+            else if (soc >= settings.LowBatteryThreshold + 3)
+            {
+                m.LowFired = false;
+            }
+
+            if (soc >= 100 && !m.FullFired)
+            {
+                m.FullFired = true;
+                ShowFullChargeNotification(device.Name);
+            }
+            else if (soc <= 95)
+            {
+                m.FullFired = false;
+            }
+        }
+
+        if (online && state.GridConnected is bool grid)
+        {
+            var prev = m.Grid;
+            m.Grid = grid;
+            if (prev.HasValue && prev != grid)
+            {
+                if (grid)
+                    ShowPowerRestoredNotification(device.Name);
+                else
+                    ShowPowerLossNotification(device.Name, soc);
+            }
+        }
+
+        var prevOnline = m.Online;
+        m.Online = online;
+        if (prevOnline == true && !online)
+        {
+            ShowOfflineNotification(device.Name);
+        }
+    }
+
+    /// <summary>
+    /// Забути стан правил (після виходу з акаунту)
+    /// </summary>
+    public static void Reset() => _memory.Clear();
+
+    /// <summary>
     /// Показати сповіщення про відключення живлення
     /// </summary>
-    public static void ShowPowerLossNotification(string deviceName)
+    public static void ShowPowerLossNotification(string deviceName, int? batteryLevel = null)
     {
         if (!App.Repository.Settings.NotificationsEnabled || !App.Repository.Settings.NotifyOnPowerLoss)
             return;
 
-        var notification = new AppNotificationBuilder()
-            .AddText($"⚡ {deviceName}")
-            .AddText("Відключено від мережі")
-            .SetScenario(AppNotificationScenario.Urgent)
-            .BuildNotification();
+        var details = batteryLevel.HasValue
+            ? $"Живлення зникло, працює від батареї ({batteryLevel}%)"
+            : "Живлення зникло, працює від батареї";
 
-        AppNotificationManager.Default.Show(notification);
+        Show(new AppNotificationBuilder()
+            .AddText($"⚡ {deviceName}")
+            .AddText(details)
+            .SetScenario(AppNotificationScenario.Urgent));
     }
 
     /// <summary>
@@ -57,12 +140,9 @@ public static class NotificationService
         if (!App.Repository.Settings.NotificationsEnabled || !App.Repository.Settings.NotifyOnPowerLoss)
             return;
 
-        var notification = new AppNotificationBuilder()
+        Show(new AppNotificationBuilder()
             .AddText($"✓ {deviceName}")
-            .AddText("Підключено до мережі")
-            .BuildNotification();
-
-        AppNotificationManager.Default.Show(notification);
+            .AddText("Живлення з'явилося, заряджається від мережі"));
     }
 
     /// <summary>
@@ -76,13 +156,10 @@ public static class NotificationService
         if (batteryLevel > App.Repository.Settings.LowBatteryThreshold)
             return;
 
-        var notification = new AppNotificationBuilder()
+        Show(new AppNotificationBuilder()
             .AddText($"🔋 {deviceName}")
             .AddText($"Низький заряд: {batteryLevel}%")
-            .SetScenario(AppNotificationScenario.Urgent)
-            .BuildNotification();
-
-        AppNotificationManager.Default.Show(notification);
+            .SetScenario(AppNotificationScenario.Urgent));
     }
 
     /// <summary>
@@ -93,12 +170,9 @@ public static class NotificationService
         if (!App.Repository.Settings.NotificationsEnabled || !App.Repository.Settings.NotifyOnFullCharge)
             return;
 
-        var notification = new AppNotificationBuilder()
+        Show(new AppNotificationBuilder()
             .AddText($"✓ {deviceName}")
-            .AddText("Повністю заряджено")
-            .BuildNotification();
-
-        AppNotificationManager.Default.Show(notification);
+            .AddText("Повністю заряджено"));
     }
 
     /// <summary>
@@ -109,13 +183,25 @@ public static class NotificationService
         if (!App.Repository.Settings.NotificationsEnabled || !App.Repository.Settings.NotifyOnOffline)
             return;
 
-        var notification = new AppNotificationBuilder()
+        Show(new AppNotificationBuilder()
             .AddText($"⚠ {deviceName}")
-            .AddText("Станція не на зв'язку")
-            .SetScenario(AppNotificationScenario.Urgent)
-            .BuildNotification();
+            .AddText("Станція не надсилає дані понад 3 хв")
+            .SetScenario(AppNotificationScenario.Urgent));
+    }
 
-        AppNotificationManager.Default.Show(notification);
+    private static void Show(AppNotificationBuilder builder)
+    {
+        if (!_isInitialized)
+            return;
+
+        try
+        {
+            AppNotificationManager.Default.Show(builder.BuildNotification());
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"NotificationService: Failed to show notification - {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -134,7 +220,7 @@ public static class NotificationService
     {
         try
         {
-            AppNotificationManager.Default.RemoveAllAsync();
+            _ = AppNotificationManager.Default.RemoveAllAsync();
         }
         catch (Exception ex)
         {
