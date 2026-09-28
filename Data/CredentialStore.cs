@@ -3,7 +3,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Omniroute.Models;
-using Windows.Storage;
 
 namespace Omniroute.Data;
 
@@ -13,12 +12,7 @@ namespace Omniroute.Data;
 public class CredentialStore
 {
     private const string CredentialsKey = "user_credentials";
-    private readonly ApplicationDataContainer _settings;
-
-    public CredentialStore()
-    {
-        _settings = ApplicationData.Current.LocalSettings;
-    }
+    private readonly LocalStore _store = LocalStore.Default;
 
     /// <summary>
     /// Зберегти облікові дані
@@ -26,7 +20,7 @@ public class CredentialStore
     public void SaveCredentials(Credentials credentials)
     {
         var json = JsonSerializer.Serialize(credentials);
-        _settings.Values[CredentialsKey] = ProtectData(json);
+        _store.Set(CredentialsKey, ProtectData(json));
     }
 
     /// <summary>
@@ -34,7 +28,7 @@ public class CredentialStore
     /// </summary>
     public Credentials? LoadCredentials()
     {
-        if (_settings.Values.TryGetValue(CredentialsKey, out var value) && value is string encrypted)
+        if (_store.Get(CredentialsKey) is string encrypted)
         {
             try
             {
@@ -54,7 +48,7 @@ public class CredentialStore
     /// </summary>
     public void ClearCredentials()
     {
-        _settings.Values.Remove(CredentialsKey);
+        _store.Remove(CredentialsKey);
     }
 
     private static string ProtectData(string data)

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Omniroute.Models;
-using Windows.Storage;
 
 namespace Omniroute.Data;
 
@@ -11,19 +10,14 @@ namespace Omniroute.Data;
 public class DeviceStore
 {
     private const string DevicesKey = "devices";
-    private readonly ApplicationDataContainer _settings;
-
-    public DeviceStore()
-    {
-        _settings = ApplicationData.Current.LocalSettings;
-    }
+    private readonly LocalStore _store = LocalStore.Default;
 
     /// <summary>
     /// Завантажити список пристроїв
     /// </summary>
     public List<Device> LoadDevices()
     {
-        if (_settings.Values.TryGetValue(DevicesKey, out var value) && value is string json)
+        if (_store.Get(DevicesKey) is string json)
         {
             try
             {
@@ -42,6 +36,6 @@ public class DeviceStore
     /// </summary>
     public void SaveDevices(IEnumerable<Device> devices)
     {
-        _settings.Values[DevicesKey] = JsonSerializer.Serialize(devices);
+        _store.Set(DevicesKey, JsonSerializer.Serialize(devices));
     }
 }

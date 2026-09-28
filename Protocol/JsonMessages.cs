@@ -13,7 +13,9 @@ public static class JsonMessages
     /// <summary>
     /// Ідентифікатор повідомлення у форматі офіційного застосунку
     /// </summary>
-    private static string Seq() => (999_900_000 + Random.Shared.Next(10_000, 99_999)).ToString();
+    public static int SeqNumber() => 999_900_000 + Random.Shared.Next(10_000, 99_999);
+
+    private static string Seq() => SeqNumber().ToString();
 
     /// <summary>
     /// Protobuf кадри починаються з 0x0A, тож JSON визначаємо за першим байтом '{'

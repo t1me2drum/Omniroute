@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Omniroute.Models;
-using Windows.Storage;
 
 namespace Omniroute.Data;
 
@@ -10,19 +9,14 @@ namespace Omniroute.Data;
 public class SettingsStore
 {
     private const string SettingsKey = "app_settings";
-    private readonly ApplicationDataContainer _settings;
-
-    public SettingsStore()
-    {
-        _settings = ApplicationData.Current.LocalSettings;
-    }
+    private readonly LocalStore _store = LocalStore.Default;
 
     /// <summary>
     /// Завантажити налаштування
     /// </summary>
     public AppSettings LoadSettings()
     {
-        if (_settings.Values.TryGetValue(SettingsKey, out var value) && value is string json)
+        if (_store.Get(SettingsKey) is string json)
         {
             try
             {
@@ -42,6 +36,6 @@ public class SettingsStore
     public void SaveSettings(AppSettings settings)
     {
         var json = JsonSerializer.Serialize(settings);
-        _settings.Values[SettingsKey] = json;
+        _store.Set(SettingsKey, json);
     }
 }

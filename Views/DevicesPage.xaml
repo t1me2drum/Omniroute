@@ -49,7 +49,7 @@
             <ScrollViewer x:Name="DevicesScrollViewer" Padding="16">
                 <ItemsRepeater x:Name="DevicesRepeater" ItemsSource="{x:Bind Devices}">
                     <ItemsRepeater.Layout>
-                        <UniformGridLayout MinItemWidth="300" MinItemHeight="200" ItemsStretch="Fill"/>
+                        <UniformGridLayout MinItemWidth="300" MinItemHeight="250" MinRowSpacing="12" MinColumnSpacing="12" ItemsStretch="Fill"/>
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="models:Device">
@@ -57,55 +57,65 @@
                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                    BorderThickness="1"
                                    CornerRadius="8"
-                                   Margin="4"
                                    Padding="16">
-                                <Border.Shadow>
-                                    <ThemeShadow />
-                                </Border.Shadow>
-                                <Grid RowSpacing="12">
+                                <Grid RowSpacing="10">
                                     <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
-                                    <!-- Device Header -->
-                                    <Grid Grid.Row="0">
+                                    <!-- Назва, модель і статус -->
+                                    <Grid Grid.Row="0" ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
                                         <StackPanel>
-                                            <TextBlock Text="{x:Bind Name}" FontSize="18" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{x:Bind ModelName}" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                            <TextBlock Text="{x:Bind Name}" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{x:Bind ModelName}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         </StackPanel>
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
-                                            <Border Background="{ThemeResource SystemFillColorSuccessBrush}"
-                                                   CornerRadius="4" Padding="8,4" Visibility="{x:Bind IsOnline, Mode=OneWay}">
-                                                <TextBlock Text="●" FontSize="10" Foreground="White"/>
-                                            </Border>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
+                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                                     Fill="{ThemeResource SystemFillColorSuccessBrush}"
+                                                     Visibility="{x:Bind IsOnline, Mode=OneWay}"/>
+                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                                     Fill="{ThemeResource TextFillColorDisabledBrush}"
+                                                     Visibility="{x:Bind IsOffline, Mode=OneWay}"/>
+                                            <TextBlock Text="{x:Bind OnlineText, Mode=OneWay}" FontSize="12"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         </StackPanel>
                                     </Grid>
 
-                                    <!-- Battery Level -->
-                                    <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="8">
-                                        <TextBlock Text="{x:Bind BatteryText, Mode=OneWay}" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                        <ProgressBar Value="{x:Bind BatteryPercent, Mode=OneWay}" Maximum="100" HorizontalAlignment="Stretch"/>
+                                    <!-- Заряд -->
+                                    <Grid Grid.Row="1">
+                                        <TextBlock Text="{x:Bind BatteryText, Mode=OneWay}" FontSize="40" FontWeight="SemiBold" LineHeight="44"/>
+                                        <TextBlock Text="{x:Bind GridText, Mode=OneWay}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </Grid>
+                                    <ProgressBar Grid.Row="2" Value="{x:Bind BatteryPercent, Mode=OneWay}" Maximum="100"/>
 
-                                        <Grid ColumnSpacing="16">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0">
-                                                <TextBlock Text="Вхід" FontSize="10" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                                <TextBlock Text="{x:Bind InputText, Mode=OneWay}" FontSize="14" FontWeight="SemiBold"/>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="1">
-                                                <TextBlock Text="Вихід" FontSize="10" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                                <TextBlock Text="{x:Bind OutputText, Mode=OneWay}" FontSize="14" FontWeight="SemiBold"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </StackPanel>
+                                    <!-- Потужності -->
+                                    <Grid Grid.Row="3" ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Вхід" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="{x:Bind InputText, Mode=OneWay}" FontSize="16" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock Text="Вихід" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="{x:Bind OutputText, Mode=OneWay}" FontSize="16" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Grid>
 
-                                    <!-- Actions -->
-                                    <Button Grid.Row="2" Content="Детальніше" HorizontalAlignment="Stretch" Click="DeviceButton_Click" Tag="{x:Bind SerialNumber}"/>
+                                    <!-- Дії -->
+                                    <Button Grid.Row="5" Content="Детальніше" HorizontalAlignment="Stretch" Click="DeviceButton_Click" Tag="{x:Bind SerialNumber}"/>
                                 </Grid>
                             </Border>
                         </DataTemplate>

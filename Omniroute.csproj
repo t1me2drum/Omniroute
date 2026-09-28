@@ -8,18 +8,15 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
-    <WindowsPackageType>MSIX</WindowsPackageType>
+    <!-- Звичайний .exe без MSIX: не потрібні сертифікат і режим розробника.
+         Windows App SDK вбудовується в збірку, тож окремо ставити Windows App Runtime не треба -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
     <!-- <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon> -->
-    <PackageCertificateKeyFile>Omniroute_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-    <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +33,13 @@
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- Схеми protobuf для Delta 3 і Delta Pro 3 (з Android-версії, джерело — tolwi/hassio-ecoflow-cloud).
+       C#-код згенеровано заздалегідь у Protocol\Proto\Generated: генерація під час збирання (Grpc.Tools)
+       не працює з першим проходом XAML-компілятора WinUI. Як оновити — див. Protocol\Proto\README.md -->
+  <ItemGroup>
+    <None Include="Protocol\Proto\*.proto" />
   </ItemGroup>
 
   <ItemGroup>

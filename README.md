@@ -48,9 +48,9 @@
 ```bash
 git clone https://github.com/t1me2drum/Omniroute.git
 cd Omniroute
-dotnet restore
-dotnet build
+dotnet build -c Release -p:Platform=x64
 ```
+Готовий застосунок: `bin/x64/Release/net8.0-windows10.0.22621.0/win-x64/Omniroute.exe`. Windows App SDK вбудований, тож копіювати треба всю папку `win-x64`. Потрібен .NET 8 Desktop Runtime.
 
 ## Структура проекту
 

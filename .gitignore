@@ -80,3 +80,6 @@ PublishProfiles/
 
 ## Certificates
 *.pfx
+
+## graphify (генерується локально)
+graphify-out/

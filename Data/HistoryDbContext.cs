@@ -14,10 +14,7 @@ namespace Omniroute.Data;
 /// </summary>
 public class HistoryDbContext : DbContext
 {
-    private static readonly string DbPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Omniroute",
-        "history.db");
+    private static readonly string DbPath = Path.Combine(LocalStore.AppFolder, "history.db");
 
     public DbSet<HistoryEntry> History { get; set; } = null!;
 

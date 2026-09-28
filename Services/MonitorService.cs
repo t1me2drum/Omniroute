@@ -23,9 +23,6 @@ public static class MonitorService
     private static readonly TimeSpan MinBackoff = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan MaxBackoff = TimeSpan.FromMinutes(5);
 
-    private static readonly IDeviceProtocol Delta2 = new Delta2Protocol(isMax: false);
-    private static readonly IDeviceProtocol Delta2Max = new Delta2Protocol(isMax: true);
-
     /// <summary>
     /// Останні параметри станції. Словник після публікації не змінюється,
     /// тому його можна читати без блокування.
@@ -334,7 +331,7 @@ public static class MonitorService
         if (device == null)
             return;
 
-        var parsed = ProtocolFor(device.Model).Parse(kind, payload);
+        var parsed = Protocols.For(device.Model).Parse(kind, payload);
 
         lock (_lock)
         {
@@ -375,7 +372,7 @@ public static class MonitorService
 
     private static Task<bool> RequestQuotaAsync(MqttLink link, string userId, Device device)
     {
-        var request = ProtocolFor(device.Model).QuotaRequest(device.SerialNumber);
+        var request = Protocols.For(device.Model).QuotaRequest(device.SerialNumber);
         return link.PublishAsync($"/app/{userId}/{device.SerialNumber}/thing/property/get", request.Payload);
     }
 
@@ -424,7 +421,7 @@ public static class MonitorService
         {
             snapshots.TryGetValue(device.SerialNumber, out var snap);
             var online = snap != null && now - snap.LastSeen < OfflineAfter;
-            var state = ProtocolFor(device.Model).GetState(snap?.Params ?? new DeviceParams());
+            var state = Protocols.For(device.Model).GetState(snap?.Params ?? new DeviceParams());
             updates.Add((device, state, online, snap?.LastSeen ?? default));
 
             if (record && online)
@@ -490,20 +487,6 @@ public static class MonitorService
             : null;
 
     #endregion
-
-    /// <summary>
-    /// Отримати протокол для пристрою
-    /// </summary>
-    private static IDeviceProtocol ProtocolFor(DeviceModel model)
-    {
-        return model switch
-        {
-            DeviceModel.Delta2 => Delta2,
-            DeviceModel.Delta2Max => Delta2Max,
-            // TODO: Додати інші протоколи (Delta Max, River 2 Max, Delta 3, Delta Pro 3)
-            _ => Delta2
-        };
-    }
 
     private static async Task SyncStationsSafeAsync()
     {

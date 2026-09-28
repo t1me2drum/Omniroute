@@ -10,7 +10,7 @@ namespace Omniroute.Protocol;
 public static class DeviceParamsExtensions
 {
     /// <summary>
-    /// Отримати числове значення
+    /// Отримати числове значення (підтримує будь-які числові типи з JSON і protobuf)
     /// </summary>
     public static double? GetNumber(this DeviceParams parameters, string key)
     {
@@ -19,12 +19,10 @@ public static class DeviceParamsExtensions
 
         return value switch
         {
-            double d => d,
-            float f => f,
-            int i => i,
-            long l => l,
             bool b => b ? 1.0 : 0.0,
-            string s when double.TryParse(s, out var d) => d,
+            string s => double.TryParse(s, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : null,
+            IConvertible c => c.ToDouble(System.Globalization.CultureInfo.InvariantCulture),
             _ => null
         };
     }
@@ -39,7 +37,7 @@ public static class DeviceParamsExtensions
     }
 
     /// <summary>
-    /// Отримати абсолютне значення
+    /// Отримати абсолютне значення (вихідна потужність у protobuf-моделях буває від'ємною)
     /// </summary>
     public static int? GetAbsInt(this DeviceParams parameters, string key)
     {
@@ -59,18 +57,28 @@ public static class DeviceParamsExtensions
     /// <summary>
     /// Сума значень кількох ключів
     /// </summary>
-    public static int? SumOf(this DeviceParams parameters, params string[] keys)
+    public static int? SumOf(this DeviceParams parameters, params string[] keys) =>
+        parameters.SumOf(false, keys);
+
+    /// <summary>
+    /// Сума значень кількох ключів (за модулем, якщо abs)
+    /// </summary>
+    public static int? SumOf(this DeviceParams parameters, bool abs, params string[] keys)
     {
-        var values = keys.Select(k => parameters.GetInt(k)).Where(v => v.HasValue).Select(v => v!.Value).ToList();
+        var values = keys
+            .Select(k => abs ? parameters.GetAbsInt(k) : parameters.GetInt(k))
+            .Where(v => v.HasValue)
+            .Select(v => v!.Value)
+            .ToList();
         return values.Count > 0 ? values.Sum() : null;
     }
 
     /// <summary>
-    /// Валідувати хвилини (фільтрує sentinel значення)
+    /// Валідувати хвилини (у стані спокою поля часу містять великі sentinel-значення, напр. 5939)
     /// </summary>
     public static int? ValidMinutes(int? minutes)
     {
-        return minutes.HasValue && minutes.Value >= 1 && minutes.Value <= 5998 ? minutes : null;
+        return minutes is >= 1 and <= 5998 ? minutes : null;
     }
 }
 
@@ -99,5 +107,54 @@ public static class ControlOptions
         ("6 год", 360),
         ("12 год", 720),
         ("24 год", 1440)
+    };
+}
+
+/// <summary>
+/// Фабрики елементів керування: команда отримує значення 1/0 для перемикачів
+/// </summary>
+public static class Controls
+{
+    public static ToggleControl Toggle(
+        string id, string label, ControlSection section, string key,
+        Func<int, DeviceParams, OutgoingMessage> command) => new()
+    {
+        Id = id,
+        Label = label,
+        Section = section,
+        Read = p => p.GetFlag(key),
+        Command = (on, p) => command(on ? 1 : 0, p),
+        Optimistic = on => new DeviceParams { [key] = on ? 1 : 0 }
+    };
+
+    public static SliderControl Slider(
+        string id, string label, ControlSection section, string key,
+        int min, int max, int step, string unit,
+        Func<int, DeviceParams, OutgoingMessage> command) => new()
+    {
+        Id = id,
+        Label = label,
+        Section = section,
+        Min = min,
+        Max = max,
+        Step = step,
+        Unit = unit,
+        Read = p => p.GetInt(key),
+        Command = command,
+        Optimistic = v => new DeviceParams { [key] = v }
+    };
+
+    public static ChoiceControl Choice(
+        string id, string label, ControlSection section, string key,
+        List<(string Label, int Value)> options,
+        Func<int, DeviceParams, OutgoingMessage> command) => new()
+    {
+        Id = id,
+        Label = label,
+        Section = section,
+        Options = options,
+        Read = p => p.GetInt(key),
+        Command = command,
+        Optimistic = v => new DeviceParams { [key] = v }
     };
 }

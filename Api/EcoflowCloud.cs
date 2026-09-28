@@ -111,7 +111,8 @@ public class EcoflowCloud : IDisposable
 
         return new MqttCredentials(
             Host: data.GetProperty("url").GetString()!,
-            Port: data.GetProperty("port").GetInt32(),
+            // Сервер повертає порт рядком ("8883"), але приймаємо й число
+            Port: int.Parse(data.GetProperty("port").ToString()),
             Username: data.GetProperty("certificateAccount").GetString()!,
             Password: data.GetProperty("certificatePassword").GetString()!
         );
@@ -132,7 +133,7 @@ public class EcoflowCloud : IDisposable
         if (!string.Equals(message, "success", StringComparison.OrdinalIgnoreCase))
         {
             var errorMsg = string.IsNullOrWhiteSpace(message)
-                ? $"Помилка {root.GetProperty("code")}"
+                ? $"Помилка {(root.TryGetProperty("code", out var code) ? code.ToString() : "невідома")}"
                 : message;
             throw new EcoflowException(errorMsg, isAuthError: authCall);
         }

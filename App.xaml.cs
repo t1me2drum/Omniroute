@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Omniroute.Data;
 using Omniroute.Services;
 using System;
+using System.IO;
 
 namespace Omniroute;
 
@@ -14,6 +15,24 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+        UnhandledException += (_, e) => LogCrash(e.Exception);
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => LogCrash(e.ExceptionObject as Exception);
+    }
+
+    /// <summary>
+    /// Записати необроблений виняток у %LocalAppData%\Omniroute\crash.log
+    /// </summary>
+    private static void LogCrash(Exception? ex)
+    {
+        try
+        {
+            Directory.CreateDirectory(LocalStore.AppFolder);
+            File.AppendAllText(Path.Combine(LocalStore.AppFolder, "crash.log"), $"[{DateTime.Now:O}] {ex}{Environment.NewLine}{Environment.NewLine}");
+        }
+        catch
+        {
+            // Нема куди повідомити про помилку запису журналу
+        }
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)

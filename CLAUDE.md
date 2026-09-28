@@ -5,20 +5,23 @@ WinUI 3 клієнт для Windows 11 для моніторингу й керу
 (коли логіка протоколів неясна, еталоном є він).
 
 ## Стек
-- .NET 8, `net8.0-windows10.0.22621.0`, WinUI 3 / Windows App SDK 1.5, пакування MSIX, платформи x64 та ARM64
+- .NET 8, `net8.0-windows10.0.22621.0`, WinUI 3 / Windows App SDK 1.5, платформи x64 та ARM64
+- Збирається як звичайний .exe без MSIX (`WindowsPackageType=None`) з вбудованим Windows App SDK (`WindowsAppSDKSelfContained`): не потрібні сертифікат, режим розробника і встановлений Windows App Runtime
 - MQTTnet 4.3.x (телеметрія й команди), EF Core Sqlite (історія), Google.Protobuf, CommunityToolkit.Mvvm
 - UI українською, коментарі в коді українською
 
 ## Збирання
 ```bash
-dotnet restore
-dotnet build -p:Platform=x64
+dotnet build -c Release -p:Platform=x64
 ```
-Потрібна Visual Studio 2022 17.8+ з Windows App SDK або Windows 11 SDK 10.0.22621.
+Результат: `bin/x64/Release/net8.0-windows10.0.22621.0/win-x64/Omniroute.exe` (запускати разом з усією папкою).
+Дані застосунку лежать у `%LocalAppData%\Omniroute\`: `settings.json` (налаштування, станції, зашифровані облікові дані), `history.db`, `crash.log`.
+Через те що пакета немає, `ApplicationData`/`Windows.Storage` не використовуємо, лише `Data/LocalStore`.
 
 ## Структура
 - `Api/` — `EcoflowCloud` (вхід, REST), `EcoflowOpenApi` (Developer API з підписом HMAC), `MqttLink` (MQTT-клієнт з власним перепідключенням)
-- `Protocol/` — `IDeviceProtocol` + реалізації для кожної моделі (поки тільки `Delta2Protocol`), `JsonMessages`, `ProtocolHelpers`
+- `Protocol/` — `IDeviceProtocol`, реєстр `Protocols.For(model)` і протоколи, перенесені з Android-версії один в один:
+  `Delta2Family` → `Delta2Protocol`, `Delta2MaxProtocol`, `DeltaMaxProtocol`, `River2MaxProtocol` (JSON); `Delta3Protocol` (Standard/Max) і `DeltaPro3Protocol` (protobuf через `ProtoCodec`). Схеми — `Protocol/Proto/*.proto`, C#-код із них заздалегідь згенеровано в `Protocol/Proto/Generated` (див. README там)
 - `Data/` — `Repository` (потокобезпечний, подія `DevicesChanged`, синхронізація станцій), `CredentialStore` (DPAPI: email, пароль, сервер, ключі Developer API), `DeviceStore`, `SettingsStore`, `HistoryDbContext` (SQLite, новий контекст на кожну операцію)
 - `Services/` — `MonitorService` (з'єднання, телеметрія, історія, статус), `NotificationService` (правила сповіщень `Evaluate` + toast)
 - `Views/` — Login, Devices, DeviceDetails, Settings. Логіка поки лежить у code-behind; `ViewModels/` порожня

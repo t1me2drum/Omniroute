@@ -43,7 +43,18 @@ public class Device : ObservableObject
     private bool? _gridConnected;
 
     [JsonIgnore]
-    public bool IsOnline { get => _isOnline; set => SetProperty(ref _isOnline, value); }
+    public bool IsOnline
+    {
+        get => _isOnline;
+        set
+        {
+            if (SetProperty(ref _isOnline, value))
+            {
+                OnPropertyChanged(nameof(IsOffline));
+                OnPropertyChanged(nameof(OnlineText));
+            }
+        }
+    }
 
     [JsonIgnore]
     public DateTime LastSeen { get => _lastSeen; set => SetProperty(ref _lastSeen, value); }
@@ -97,7 +108,11 @@ public class Device : ObservableObject
     public int? Cycles { get => _cycles; set => SetProperty(ref _cycles, value); }
 
     [JsonIgnore]
-    public bool? GridConnected { get => _gridConnected; set => SetProperty(ref _gridConnected, value); }
+    public bool? GridConnected
+    {
+        get => _gridConnected;
+        set { if (SetProperty(ref _gridConnected, value)) OnPropertyChanged(nameof(GridText)); }
+    }
 
     // Готові рядки для інтерфейсу
     [JsonIgnore] public string BatteryText => _batteryLevel.HasValue ? $"{_batteryLevel}%" : "--";
@@ -105,6 +120,14 @@ public class Device : ObservableObject
     [JsonIgnore] public string InputText => FormatWatts(_inputWatts);
     [JsonIgnore] public string OutputText => FormatWatts(_outputWatts);
     [JsonIgnore] public string ModelName => Model.GetDisplayName();
+    [JsonIgnore] public bool IsOffline => !_isOnline;
+    [JsonIgnore] public string OnlineText => _isOnline ? "Онлайн" : "Офлайн";
+    [JsonIgnore] public string GridText => _gridConnected switch
+    {
+        true => "⚡ Від мережі",
+        false => "🔋 Від батареї",
+        null => string.Empty
+    };
 
     public static string FormatWatts(int? watts) => watts.HasValue ? $"{watts} Вт" : "-- Вт";
 
@@ -123,7 +146,8 @@ public enum DeviceModel
     River2Max,       // R611
     Delta3,          // P231
     Delta3Plus,      // P231
-    DeltaPro3        // MR51
+    DeltaPro3,       // MR51
+    Delta3Max        // P231 / назва продукту "Delta 3 Max" (додано в кінець, бо enum зберігається числом)
 }
 
 /// <summary>
@@ -152,6 +176,7 @@ public static class DeviceModelExtensions
             "DELTA 2 MAX" => DeviceModel.Delta2Max,
             "DELTA 3" => DeviceModel.Delta3,
             "DELTA 3 PLUS" => DeviceModel.Delta3Plus,
+            "DELTA 3 MAX" or "DELTA 3 MAX PLUS" => DeviceModel.Delta3Max,
             "DELTA PRO 3" => DeviceModel.DeltaPro3,
             "DELTA MAX" => DeviceModel.DeltaMax,
             "RIVER 2 MAX" => DeviceModel.River2Max,
@@ -170,12 +195,13 @@ public static class DeviceModelExtensions
             DeviceModel.Delta3 => "Delta 3",
             DeviceModel.Delta3Plus => "Delta 3 Plus",
             DeviceModel.DeltaPro3 => "Delta Pro 3",
+            DeviceModel.Delta3Max => "Delta 3 Max",
             _ => "Unknown"
         };
     }
 
     public static bool UsesProtobuf(this DeviceModel model)
     {
-        return model is DeviceModel.Delta3 or DeviceModel.Delta3Plus or DeviceModel.DeltaPro3;
+        return model is DeviceModel.Delta3 or DeviceModel.Delta3Plus or DeviceModel.Delta3Max or DeviceModel.DeltaPro3;
     }
 }

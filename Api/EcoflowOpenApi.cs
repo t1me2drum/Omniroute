@@ -91,7 +91,8 @@ public class EcoflowOpenApi : IDisposable
         var json = JsonDocument.Parse(content);
         var root = json.RootElement;
 
-        var code = root.TryGetProperty("code", out var c) ? c.GetString() : null;
+        // code і online можуть прийти як рядком, так і числом
+        var code = root.TryGetProperty("code", out var c) ? c.ToString() : null;
         if (code != "0")
         {
             var message = root.TryGetProperty("message", out var msg) ? msg.GetString() : null;
@@ -110,10 +111,10 @@ public class EcoflowOpenApi : IDisposable
         foreach (var item in data.EnumerateArray())
         {
             var sn = item.GetProperty("sn").GetString()!;
-            var deviceName = item.TryGetProperty("deviceName", out var dn) ? dn.GetString()?.Trim() : null;
+            var deviceName = item.TryGetProperty("deviceName", out var dn) && dn.ValueKind == JsonValueKind.String ? dn.GetString()?.Trim() : null;
             var name = string.IsNullOrWhiteSpace(deviceName) ? sn : deviceName;
-            var productName = item.TryGetProperty("productName", out var pn) ? pn.GetString() : null;
-            var online = item.TryGetProperty("online", out var o) && o.GetInt32() == 1;
+            var productName = item.TryGetProperty("productName", out var pn) && pn.ValueKind == JsonValueKind.String ? pn.GetString() : null;
+            var online = item.TryGetProperty("online", out var o) && o.ToString() == "1";
 
             devices.Add(new CloudDevice(sn, name, productName, online));
         }

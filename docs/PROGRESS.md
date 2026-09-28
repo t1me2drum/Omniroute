@@ -28,14 +28,27 @@
 
 ### Лишилося
 - [ ] **Перевірити на реальній станції:** застосунок ще не запускався з живими даними (вхід, MQTT, сповіщення)
-- [ ] Протоколи Delta Max, River 2 Max (інші JSON-ключі, `LegacyJsonProtocols.kt`), Delta 3 і Delta Pro 3 (protobuf, `Delta3Protocol.kt`, `DeltaPro3Protocol.kt`). Поки що для них використовується Delta2Protocol, тож показники будуть порожні
-- [ ] Керування станцією (`GetControls` є, але UI і публікації в `/thing/property/set` немає)
+- [ ] Керування станцією: `GetControls` перенесено для всіх моделей, бракує UI і публікації в `/app/{userId}/{sn}/thing/property/set`
 - [ ] Графіки історії
 - [ ] Сертифікат для підпису MSIX (`Omniroute_TemporaryKey.pfx` відсутній) і профілі публікації `win-x64.pubxml`
 - [ ] Іконка застосунку `AppIcon.ico`; справжні логотипи замість тимчасових
 - [ ] Натискання на сповіщення має відкривати станцію
 - [ ] Робота у фоні після закриття вікна (зараз моніторинг живе, поки відкрито вікно)
 - [ ] MVVM: `ViewModels/` порожня, логіка в code-behind
+
+## 2026-09-27: робоча збірка
+- [x] Перехід з MSIX на звичайний .exe: `WindowsPackageType=None` + вбудований Windows App SDK (у системі був тільки фреймворк 1.5, без DDLM/Main, тож залежний від системи .exe не стартував)
+- [x] `Data/LocalStore`: налаштування у файлі `%LocalAppData%\Omniroute\settings.json` замість `ApplicationData.LocalSettings`
+- [x] Необроблені винятки пишуться в `%LocalAppData%\Omniroute\crash.log`
+- [x] Release-збірка запускається: вікно відкривається, екран входу відмальовується, `history.db` створюється
+- [ ] Вхід і моніторинг з реальним акаунтом ще не перевірені
+
+## 2026-09-27: усі протоколи з Android-версії
+- [x] Перенесено один в один: Delta 2, Delta 2 Max (виправлено ключ сонячного входу `mppt.pv2InWatts`), Delta Max, River 2 Max, Delta 3 / Delta 3 Max, Delta Pro 3, разом з елементами керування (`GetControls`)
+- [x] `ProtoCodec`: кадри HeaderMessage, XOR-розшифрування pdata, base64, розгортання полів protobuf через рефлексію (як DynamicMessage.allFields), пакети SetCommand і запит повного стану
+- [x] Нова модель `Delta3Max` (додана в кінець enum, бо в settings.json модель зберігається числом)
+- [x] Перевірено на живих даних: Delta 3 показує заряд і потужність
+- [ ] Delta Max, River 2 Max, Delta Pro 3 не перевірені (таких станцій немає); Delta 2 Max — перевірити, коли станція буде онлайн
 
 ## Наступний крок
 Запустити застосунок, увійти, додати станцію або ввести ключі Developer API і перевірити, що телеметрія й сповіщення надходять.

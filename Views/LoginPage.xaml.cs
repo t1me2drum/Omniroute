@@ -46,6 +46,7 @@ public sealed partial class LoginPage : Page
             // Спробувати різні регіональні сервери
             var hosts = new[] { "api.ecoflow.com", "api-e.ecoflow.com", "api-a.ecoflow.com" };
             string? successHost = null;
+            Exception? lastError = null;
 
             foreach (var host in hosts)
             {
@@ -61,15 +62,17 @@ public sealed partial class LoginPage : Page
                 {
                     throw; // Помилка авторизації - не пробувати інші сервери
                 }
-                catch
+                catch (Exception ex)
                 {
-                    continue; // Спробувати наступний сервер
+                    lastError = ex; // Спробувати наступний сервер
                 }
             }
 
             if (successHost == null)
             {
-                ShowError("Не вдалося підключитися до серверів EcoFlow");
+                ShowError(lastError == null
+                    ? "Не вдалося підключитися до серверів EcoFlow"
+                    : $"Не вдалося підключитися до серверів EcoFlow: {lastError.Message}");
                 return;
             }
 

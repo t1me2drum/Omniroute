@@ -1,44 +1,29 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
+using static Omniroute.Protocol.Controls;
 
 namespace Omniroute.Protocol;
 
 /// <summary>
-/// Протокол для Delta 2 і Delta 2 Max
-/// Використовує JSON формат повідомлень через MQTT
+/// Delta 2 і Delta 2 Max працюють з JSON через MQTT API застосунку.
+/// Назви ключів і команди — за tolwi/hassio-ecoflow-cloud (internal/delta2.py, delta2_max.py).
 /// </summary>
-public class Delta2Protocol : IDeviceProtocol
+public abstract class Delta2Family : IDeviceProtocol
 {
-    private readonly string[] _solarKeys;
-    private readonly bool _isMax;
+    protected abstract string[] SolarKeys { get; }
 
-    public Delta2Protocol(bool isMax = false)
+    public virtual DeviceParams Parse(TopicKind kind, byte[] payload) => kind switch
     {
-        _isMax = isMax;
-        _solarKeys = isMax
-            ? new[] { "mppt.inWatts", "mppt.dc24vWatts" }
-            : new[] { "mppt.inWatts" };
-    }
+        TopicKind.Data or TopicKind.GetReply => JsonMessages.Parse(payload),
+        _ => new DeviceParams()
+    };
 
-    public DeviceParams Parse(TopicKind kind, byte[] payload)
-    {
-        return kind switch
-        {
-            TopicKind.Data or TopicKind.GetReply => JsonMessages.Parse(payload),
-            TopicKind.SetReply => new DeviceParams(),
-            _ => new DeviceParams()
-        };
-    }
+    public OutgoingMessage QuotaRequest(string serialNumber) => JsonMessages.LatestQuotas();
 
-    public OutgoingMessage QuotaRequest(string serialNumber)
+    public virtual DeviceState GetState(DeviceParams p)
     {
-        return JsonMessages.LatestQuotas();
-    }
-
-    public DeviceState GetState(DeviceParams p)
-    {
-        var acInVolt = p.GetNumber("inv.acInVol");
-        var acInVoltInt = acInVolt.HasValue ? (int)(acInVolt.Value / 1000) : (int?)null;
+        var acInVoltRaw = p.GetNumber("inv.acInVol");
+        int? acInVolt = acInVoltRaw.HasValue ? (int)(acInVoltRaw.Value / 1000) : null;
         var acIn = p.GetInt("inv.inputWatts");
 
         return new DeviceState
@@ -48,189 +33,124 @@ public class Delta2Protocol : IDeviceProtocol
             OutputW = p.GetInt("pd.wattsOutSum"),
             AcInW = acIn,
             AcOutW = p.GetInt("inv.outputWatts"),
-            SolarW = p.SumOf(_solarKeys),
+            SolarW = p.SumOf(SolarKeys),
             DcOutW = p.GetInt("mppt.outWatts") ?? p.GetInt("pd.carWatts"),
             UsbOutW = p.SumOf("pd.typec1Watts", "pd.typec2Watts", "pd.usb1Watts",
-                             "pd.usb2Watts", "pd.qcUsb1Watts", "pd.qcUsb2Watts"),
+                "pd.usb2Watts", "pd.qcUsb1Watts", "pd.qcUsb2Watts"),
             ChargeRemainMin = DeviceParamsExtensions.ValidMinutes(p.GetInt("bms_emsStatus.chgRemainTime")),
             DischargeRemainMin = DeviceParamsExtensions.ValidMinutes(p.GetInt("bms_emsStatus.dsgRemainTime")),
             BatteryTempC = p.GetInt("bms_bmsStatus.temp"),
-            AcInVolt = acInVoltInt,
-            GridConnected = acInVoltInt == null && acIn == null
+            AcInVolt = acInVolt,
+            GridConnected = acInVolt == null && acIn == null
                 ? null
-                : (acInVoltInt ?? 0) > 100 || (acIn ?? 0) > 0,
+                : (acInVolt ?? 0) > 100 || (acIn ?? 0) > 0,
             Cycles = p.GetInt("bms_bmsStatus.cycles"),
             Soh = p.GetInt("bms_bmsStatus.soh")
         };
     }
 
-    public List<IControl> GetControls(string serialNumber)
+    public abstract List<IControl> GetControls(string serialNumber);
+
+    protected static Dictionary<string, object> Args(params (string Key, object Value)[] items) =>
+        items.ToDictionary(i => i.Key, i => i.Value);
+
+    protected static IEnumerable<IControl> SocLimits(string? moduleSn) => new IControl[]
     {
-        var controls = new List<IControl>
-        {
-            // AC вихід
-            new ToggleControl
-            {
-                Id = "ac_out",
-                Label = "AC вихід",
-                Section = ControlSection.Outputs,
-                Read = p => p.GetFlag("mppt.cfgAcEnabled"),
-                Command = (on, _) => JsonMessages.Command(5, "acOutCfg", new()
-                {
-                    ["enabled"] = on ? 1 : 0,
-                    ["out_voltage"] = -1,
-                    ["out_freq"] = 255,
-                    ["xboost"] = 255
-                }),
-                Optimistic = on => new DeviceParams { ["mppt.cfgAcEnabled"] = on ? 1 : 0 }
-            },
+        Slider("max_chg", "Макс. рівень заряду", ControlSection.Charging, "bms_emsStatus.maxChargeSoc", 50, 100, 1, "%",
+            (v, _) => JsonMessages.Command(2, "upsConfig", Args(("maxChgSoc", v)), moduleSn)),
+        Slider("min_dsg", "Мін. рівень розряду", ControlSection.Charging, "bms_emsStatus.minDsgSoc", 0, 30, 1, "%",
+            (v, _) => JsonMessages.Command(2, "dsgCfg", Args(("minDsgSoc", v)), moduleSn))
+    };
 
-            // X-Boost
-            new ToggleControl
-            {
-                Id = "xboost",
-                Label = "X-Boost",
-                Section = ControlSection.Outputs,
-                Read = p => p.GetFlag("mppt.cfgAcXboost"),
-                Command = (on, _) => JsonMessages.Command(5, "acOutCfg", new()
-                {
-                    ["enabled"] = 255,
-                    ["out_voltage"] = -1,
-                    ["out_freq"] = 255,
-                    ["xboost"] = on ? 1 : 0
-                }),
-                Optimistic = on => new DeviceParams { ["mppt.cfgAcXboost"] = on ? 1 : 0 }
-            },
+    protected static IEnumerable<IControl> Backup() => new IControl[]
+    {
+        Toggle("bp_enabled", "Резерв заряду", ControlSection.Backup, "pd.watchIsConfig",
+            (v, _) => JsonMessages.Command(1, "watthConfig",
+                Args(("bpPowerSoc", v * 50), ("minChgSoc", 0), ("isConfig", v), ("minDsgSoc", 0)))),
+        Slider("bp_level", "Рівень резерву", ControlSection.Backup, "pd.bpPowerSoc", 5, 100, 5, "%",
+            (v, _) => JsonMessages.Command(1, "watthConfig",
+                Args(("isConfig", 1), ("bpPowerSoc", v), ("minDsgSoc", 0), ("minChgSoc", 0))))
+    };
+}
 
-            // DC 12V вихід
-            new ToggleControl
-            {
-                Id = "dc_out",
-                Label = "DC 12V вихід",
-                Section = ControlSection.Outputs,
-                Read = p => p.GetFlag("pd.carState"),
-                Command = (on, _) => JsonMessages.Command(5, "mpptCar", new()
-                {
-                    ["enabled"] = on ? 1 : 0
-                }),
-                Optimistic = on => new DeviceParams { ["pd.carState"] = on ? 1 : 0 }
-            },
+public sealed class Delta2Protocol : Delta2Family
+{
+    public static readonly Delta2Protocol Instance = new();
 
-            // USB виходи
-            new ToggleControl
-            {
-                Id = "usb_out",
-                Label = "USB виходи",
-                Section = ControlSection.Outputs,
-                Read = p => p.GetFlag("pd.dcOutState"),
-                Command = (on, _) => JsonMessages.Command(1, "dcOutCfg", new()
-                {
-                    ["enabled"] = on ? 1 : 0
-                }),
-                Optimistic = on => new DeviceParams { ["pd.dcOutState"] = on ? 1 : 0 }
-            },
+    protected override string[] SolarKeys { get; } = { "mppt.inWatts" };
 
-            // Потужність заряду від мережі
-            new SliderControl
-            {
-                Id = "ac_chg_w",
-                Label = "Потужність заряду від мережі",
-                Section = ControlSection.Charging,
-                Min = 200,
-                Max = _isMax ? 2400 : 1200,
-                Step = 100,
-                Unit = "Вт",
-                Read = p => p.GetInt("mppt.cfgChgWatts"),
-                Command = (watts, _) => JsonMessages.Command(5, "acChgCfg", new()
-                {
-                    ["chgWatts"] = watts,
-                    ["chgPauseFlag"] = 255
-                }),
-                Optimistic = watts => new DeviceParams { ["mppt.cfgChgWatts"] = watts }
-            },
-
-            // Максимальний рівень заряду
-            new SliderControl
-            {
-                Id = "max_chg",
-                Label = "Макс. рівень заряду",
-                Section = ControlSection.Charging,
-                Min = 50,
-                Max = 100,
-                Step = 1,
-                Unit = "%",
-                Read = p => p.GetInt("bms_emsStatus.maxChargeSoc"),
-                Command = (soc, _) => JsonMessages.Command(2, "upsConfig", new()
-                {
-                    ["maxChgSoc"] = soc
-                }),
-                Optimistic = soc => new DeviceParams { ["bms_emsStatus.maxChargeSoc"] = soc }
-            },
-
-            // Мінімальний рівень розряду
-            new SliderControl
-            {
-                Id = "min_dsg",
-                Label = "Мін. рівень розряду",
-                Section = ControlSection.Charging,
-                Min = 0,
-                Max = 30,
-                Step = 1,
-                Unit = "%",
-                Read = p => p.GetInt("bms_emsStatus.minDsgSoc"),
-                Command = (soc, _) => JsonMessages.Command(2, "dsgCfg", new()
-                {
-                    ["minDsgSoc"] = soc
-                }),
-                Optimistic = soc => new DeviceParams { ["bms_emsStatus.minDsgSoc"] = soc }
-            },
-
-            // Беззвучний режим
-            new ToggleControl
-            {
-                Id = "quiet",
-                Label = "Беззвучний режим",
-                Section = ControlSection.System,
-                Read = p => p.GetFlag("mppt.beepState"),
-                Command = (on, _) => JsonMessages.Command(5, "quietMode", new()
-                {
-                    ["enabled"] = on ? 1 : 0
-                }),
-                Optimistic = on => new DeviceParams { ["mppt.beepState"] = on ? 1 : 0 }
-            },
-
-            // Вимкнення екрана
-            new ChoiceControl
-            {
-                Id = "screen",
-                Label = "Вимкнення екрана",
-                Section = ControlSection.System,
-                Options = ControlOptions.ScreenTimeoutOptions,
-                Read = p => p.GetInt("pd.lcdOffSec"),
-                Command = (value, _) => JsonMessages.Command(1, "lcdCfg", new()
-                {
-                    ["brighLevel"] = 255,
-                    ["delayOff"] = value
-                }),
-                Optimistic = value => new DeviceParams { ["pd.lcdOffSec"] = value }
-            },
-
-            // Автовимкнення станції
-            new ChoiceControl
-            {
-                Id = "unit_standby",
-                Label = "Автовимкнення станції",
-                Section = ControlSection.System,
-                Options = ControlOptions.StandbyOptions,
-                Read = p => p.GetInt("pd.standbyMin"),
-                Command = (value, _) => JsonMessages.Command(1, "standbyTime", new()
-                {
-                    ["standbyMin"] = value
-                }),
-                Optimistic = value => new DeviceParams { ["pd.standbyMin"] = value }
-            }
-        };
-
-        return controls;
+    public override List<IControl> GetControls(string serialNumber) => new IControl[]
+    {
+        Toggle("ac_out", "AC вихід", ControlSection.Outputs, "mppt.cfgAcEnabled",
+            (v, _) => JsonMessages.Command(5, "acOutCfg", Args(("enabled", v), ("out_voltage", -1), ("out_freq", 255), ("xboost", 255)))),
+        Toggle("xboost", "X-Boost", ControlSection.Outputs, "mppt.cfgAcXboost",
+            (v, _) => JsonMessages.Command(5, "acOutCfg", Args(("enabled", 255), ("out_voltage", -1), ("out_freq", 255), ("xboost", v)))),
+        Toggle("dc_out", "DC 12V вихід", ControlSection.Outputs, "pd.carState",
+            (v, _) => JsonMessages.Command(5, "mpptCar", Args(("enabled", v)))),
+        Toggle("usb_out", "USB виходи", ControlSection.Outputs, "pd.dcOutState",
+            (v, _) => JsonMessages.Command(1, "dcOutCfg", Args(("enabled", v)))),
+        Toggle("ac_auto", "AC завжди увімкнений", ControlSection.Outputs, "pd.acAutoOutConfig",
+            (v, p) => JsonMessages.Command(1, "acAutoOutConfig",
+                Args(("acAutoOutConfig", v), ("minAcOutSoc", (p.GetInt("bms_emsStatus.minDsgSoc") ?? 0) + 5)))),
+        Slider("ac_chg_w", "Потужність заряду від мережі", ControlSection.Charging, "mppt.cfgChgWatts", 200, 1200, 100, "Вт",
+            (v, _) => JsonMessages.Command(5, "acChgCfg", Args(("chgWatts", v), ("chgPauseFlag", 255)))),
+        Choice("dc_chg_a", "Струм заряду DC", ControlSection.Charging, "mppt.dcChgCurrent",
+            new() { ("4 А", 4000), ("6 А", 6000), ("8 А", 8000) },
+            (v, _) => JsonMessages.Command(5, "dcChgCfg", Args(("dcChgCfg", v)))),
+        Toggle("pv_prio", "Пріоритет сонячного заряду", ControlSection.Charging, "pd.pvChgPrioSet",
+            (v, _) => JsonMessages.Command(1, "pvChangePrio", Args(("pvChangeSet", v))))
     }
+    .Concat(SocLimits(null))
+    .Concat(Backup())
+    .Concat(new IControl[]
+    {
+        Toggle("quiet", "Беззвучний режим", ControlSection.System, "mppt.beepState",
+            (v, _) => JsonMessages.Command(5, "quietMode", Args(("enabled", v)))),
+        Choice("screen", "Вимкнення екрана", ControlSection.System, "pd.lcdOffSec", ControlOptions.ScreenTimeoutOptions,
+            (v, _) => JsonMessages.Command(1, "lcdCfg", Args(("brighLevel", 255), ("delayOff", v)))),
+        Choice("unit_standby", "Автовимкнення станції", ControlSection.System, "pd.standbyMin", ControlOptions.StandbyOptions,
+            (v, _) => JsonMessages.Command(1, "standbyTime", Args(("standbyMin", v)))),
+        Choice("ac_standby", "Автовимкнення AC", ControlSection.System, "mppt.acStandbyMins", ControlOptions.StandbyOptions,
+            (v, _) => JsonMessages.Command(5, "standbyTime", Args(("standbyMins", v)))),
+        Choice("dc_standby", "Автовимкнення DC", ControlSection.System, "mppt.carStandbyMin", ControlOptions.StandbyOptions,
+            (v, _) => JsonMessages.Command(5, "carStandby", Args(("standbyMins", v))))
+    })
+    .ToList();
+}
+
+public sealed class Delta2MaxProtocol : Delta2Family
+{
+    public static readonly Delta2MaxProtocol Instance = new();
+
+    protected override string[] SolarKeys { get; } = { "mppt.inWatts", "mppt.pv2InWatts" };
+
+    public override List<IControl> GetControls(string sn) => new IControl[]
+    {
+        Toggle("ac_out", "AC вихід", ControlSection.Outputs, "inv.cfgAcEnabled",
+            (v, _) => JsonMessages.Command(3, "acOutCfg", Args(("enabled", v), ("out_voltage", -1), ("out_freq", 255), ("xboost", 255)), sn)),
+        Toggle("xboost", "X-Boost", ControlSection.Outputs, "inv.cfgAcXboost",
+            (v, _) => JsonMessages.Command(3, "acOutCfg", Args(("xboost", v)), sn)),
+        Toggle("dc_out", "DC 12V вихід", ControlSection.Outputs, "pd.carState",
+            (v, _) => JsonMessages.Command(5, "mpptCar", Args(("enabled", v)))),
+        Toggle("usb_out", "USB виходи", ControlSection.Outputs, "pd.dcOutState",
+            (v, _) => JsonMessages.Command(1, "dcOutCfg", Args(("enabled", v)), sn)),
+        Toggle("ac_auto", "AC завжди увімкнений", ControlSection.Outputs, "pd.newAcAutoOnCfg",
+            (v, _) => JsonMessages.Command(1, "newAcAutoOnCfg", Args(("enabled", v), ("minAcSoc", 5)), sn)),
+        Slider("ac_chg_w", "Потужність заряду від мережі", ControlSection.Charging, "inv.SlowChgWatts", 200, 2400, 100, "Вт",
+            (v, _) => JsonMessages.Command(3, "acChgCfg", Args(("slowChgWatts", v), ("fastChgWatts", 2000), ("chgPauseFlag", 0)), sn))
+    }
+    .Concat(SocLimits(sn))
+    .Concat(Backup())
+    .Concat(new IControl[]
+    {
+        Toggle("quiet", "Беззвучний режим", ControlSection.System, "pd.beepMode",
+            (v, _) => JsonMessages.Command(1, "quietCfg", Args(("enabled", v)), sn)),
+        Choice("screen", "Вимкнення екрана", ControlSection.System, "pd.lcdOffSec", ControlOptions.ScreenTimeoutOptions,
+            (v, _) => JsonMessages.Command(1, "lcdCfg", Args(("brighLevel", 255), ("delayOff", v)), sn)),
+        Choice("unit_standby", "Автовимкнення станції", ControlSection.System, "inv.standbyMin", ControlOptions.StandbyOptions,
+            (v, _) => JsonMessages.Command(1, "standbyTime", Args(("standbyMin", v)), sn)),
+        Choice("dc_standby", "Автовимкнення DC", ControlSection.System, "mppt.carStandbyMin", ControlOptions.StandbyOptions,
+            (v, _) => JsonMessages.Command(5, "standbyTime", Args(("standbyMins", v)), sn))
+    })
+    .ToList();
 }
