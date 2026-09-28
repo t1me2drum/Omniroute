@@ -26,15 +26,14 @@
 ## Вимоги
 
 - Windows 11 (версія 22H2 або новіша)
-- .NET 8.0 або новіший
-- Windows App SDK 1.5+
+- .NET 8 Desktop Runtime (Windows App SDK вбудований у збірку)
 
 ## Встановлення
 
-1. Завантажте останню версію з [Releases](../../releases/latest)
-2. Встановіть MSIX пакет
+1. Завантажте `Omniroute-<версія>-win-x64.zip` з [Releases](../../releases/latest)
+2. Розпакуйте архів у будь-яку папку й запустіть `Omniroute.exe` (встановлювати нічого не треба, потрібен лише [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0))
 3. Увійдіть з email і паролем EcoFlow
-4. Налаштуйте доступ до API через developer.ecoflow.com
+4. Щоб станції підтягнулися автоматично, введіть у налаштуваннях ключі з developer.ecoflow.com (або додайте станцію вручну за серійним номером)
 
 ## Збирання
 
