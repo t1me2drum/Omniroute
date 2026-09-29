@@ -73,18 +73,17 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Controls -->
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                       BorderThickness="1"
-                       CornerRadius="8"
-                       Padding="16">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="Керування" FontSize="18" FontWeight="SemiBold"/>
-                        <TextBlock Text="Елементи керування будуть додані в наступних версіях"
-                                  Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                    </StackPanel>
-                </Border>
+                <!-- Керування: картки секцій будуються в code-behind з IDeviceProtocol.GetControls -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Керування" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="OfflineWarningText"
+                              Text="Станція не на зв'язку — команди можуть не дійти."
+                              Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                              TextWrapping="Wrap" Visibility="Collapsed"/>
+                    <InfoBar x:Name="CommandErrorBar" Severity="Error" IsOpen="False"
+                            Title="Команду не надіслано" Message="Немає з'єднання з хмарою"/>
+                    <StackPanel x:Name="ControlsPanel" Spacing="12"/>
+                </StackPanel>
 
                 <!-- Info -->
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"

@@ -52,6 +52,11 @@ public static class MonitorService
     /// </summary>
     public static event Action<string>? StatusChanged;
 
+    /// <summary>
+    /// Оновилися параметри станцій (раз на такт і після команди). Викликається в UI-потоці.
+    /// </summary>
+    public static event Action? ParamsUpdated;
+
     public static bool IsRunning
     {
         get { lock (_lock) return _cts != null; }
@@ -378,6 +383,82 @@ public static class MonitorService
 
     #endregion
 
+    #region Керування
+
+    /// <summary>
+    /// Останні параметри станції (незмінна копія) — з них читають значення елементи керування
+    /// </summary>
+    public static DeviceParams GetParams(string serialNumber)
+    {
+        lock (_lock)
+        {
+            return _snapshots.TryGetValue(serialNumber, out var snap) ? snap.Params : new DeviceParams();
+        }
+    }
+
+    /// <summary>
+    /// Надіслати команду станції. Після успішної публікації значення оптимістично
+    /// підставляється в знімок, доки станція не надішле власне (як Repository.send в Android).
+    /// build отримує поточні параметри й повертає пакет команди та оптимістичні значення.
+    /// </summary>
+    public static async Task<bool> SendAsync(Device device, Func<DeviceParams, (OutgoingMessage Command, DeviceParams Optimistic)> build)
+    {
+        MqttLink? link;
+        string? userId;
+        lock (_lock)
+        {
+            link = _link;
+            userId = _userId;
+        }
+        if (link == null || userId == null)
+            return false;
+
+        var (command, optimistic) = build(GetParams(device.SerialNumber));
+        var ok = await link.PublishAsync($"/app/{userId}/{device.SerialNumber}/thing/property/set", command.Payload);
+        if (!ok)
+        {
+            System.Diagnostics.Debug.WriteLine($"MonitorService: command publish failed for {device.SerialNumber}");
+            return false;
+        }
+
+        lock (_lock)
+        {
+            if (_cts == null)
+                return true;
+
+            // LastSeen не чіпаємо: наша власна команда не означає, що станція на зв'язку
+            _snapshots.TryGetValue(device.SerialNumber, out var old);
+            var merged = old != null ? new DeviceParams(old.Params) : new DeviceParams();
+            foreach (var kv in optimistic)
+            {
+                merged[kv.Key] = kv.Value;
+            }
+            _snapshots[device.SerialNumber] = new Snapshot(merged, old?.LastSeen ?? DateTime.MinValue);
+        }
+
+        RaiseParamsUpdated();
+        return true;
+    }
+
+    public static Task<bool> ToggleAsync(Device device, ToggleControl control, bool on) =>
+        SendAsync(device, p => (control.Command(on, p), control.Optimistic(on)));
+
+    public static Task<bool> SetValueAsync(Device device, SliderControl control, int value) =>
+        SendAsync(device, p => (control.Command(value, p), control.Optimistic(value)));
+
+    public static Task<bool> ChooseAsync(Device device, ChoiceControl control, int value) =>
+        SendAsync(device, p => (control.Command(value, p), control.Optimistic(value)));
+
+    private static void RaiseParamsUpdated()
+    {
+        if (_dispatcher == null || _dispatcher.HasThreadAccess)
+            ParamsUpdated?.Invoke();
+        else
+            _dispatcher.TryEnqueue(() => ParamsUpdated?.Invoke());
+    }
+
+    #endregion
+
     #region Періодична обробка
 
     private static async Task TickLoopAsync(CancellationToken token)
@@ -460,6 +541,7 @@ public static class MonitorService
                 ApplyState(device, state, online, lastSeen);
                 NotificationService.Evaluate(device, state, online);
             }
+            ParamsUpdated?.Invoke();
         });
     }
 
