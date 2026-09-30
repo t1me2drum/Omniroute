@@ -51,7 +51,10 @@ dotnet build -c Release -p:Platform=x64
 
 ## Граф знань (graphify)
 - `graphify-out/` лежить у репозиторії: `graph.json`, `graph.html` (відкривається в браузері), `GRAPH_REPORT.md`, семантичний кеш документів
-- На питання про архітектуру спершу відповідати через `graphify query "<питання>"`, а не читати файли підряд
-- Після помітних змін у коді оновити граф: `/graphify . --update` (без LLM: `graphify update .`). Згенерований protoc-код виключено через `.graphifyignore`
+- На питання про код спершу `graphify query "<питання>"` (вузли названо англійською, як у коді: запит українською часто нічого не знаходить), зв'язки — `graphify path "<A>" "<B>"`, окреме поняття — `graphify explain "<поняття>"`. Вони повертають вузький підграф, менший за `GRAPH_REPORT.md` чи вивід grep
+- Якщо є `graphify-out/wiki/index.md` — ним користуватися для загальної навігації замість перегляду сирих файлів
+- `GRAPH_REPORT.md` читати лише для огляду архітектури або коли query/path/explain не дали достатньо контексту
+- Після змін у коді: `graphify update .` (лише AST, без LLM); повне оновлення з LLM — `/graphify . --update`. Згенерований protoc-код виключено через `.graphifyignore`
+- Хуки `PreToolUse` у `.claude/settings.json` (`graphify hook-guard search|read`) нагадують про це перед Grep/Read; вони нічого не блокують. Команда `graphify` має бути в PATH
 - Інструмент — PyPI-пакет `graphifyy` 0.9.72 (на ПК встановлено через uv), скіл `/graphify` лежить у репозиторії: `.claude/skills/graphify` (копія того, що ставить `graphify install --platform claude`). Оновлюючи версію пакета, оновити й скіл
 - Хмарні сесії: `.claude/hooks/session-start.sh` (зареєстровано в `.claude/settings.json`, працює лише при `CLAUDE_CODE_REMOTE=true`) ставить `graphifyy`, .NET 8 SDK і відновлює пакети тестів
