@@ -24,6 +24,13 @@
     <Content Include="Assets\**\*.*" />
   </ItemGroup>
 
+  <!-- Тести — окремий проєкт (tests/Omniroute.Tests), у збірку застосунку не входять -->
+  <ItemGroup>
+    <Compile Remove="tests\**" />
+    <None Remove="tests\**" />
+    <Page Remove="tests\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240802000" />

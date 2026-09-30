@@ -90,7 +90,7 @@ public static class JsonMessages
     {
         return element.ValueKind switch
         {
-            JsonValueKind.Number => element.TryGetInt32(out var i) ? i : element.GetDouble(),
+            JsonValueKind.Number => element.TryGetInt32(out var i) ? (object)i : element.GetDouble(),
             JsonValueKind.String => element.GetString(),
             JsonValueKind.True => true,
             JsonValueKind.False => false,

@@ -74,11 +74,11 @@ public static class DeviceParamsExtensions
     }
 
     /// <summary>
-    /// Валідувати хвилини (у стані спокою поля часу містять великі sentinel-значення, напр. 5939)
+    /// Валідувати хвилини: 5939 і більше означає «немає оцінки», справжні оцінки менші
     /// </summary>
     public static int? ValidMinutes(int? minutes)
     {
-        return minutes is >= 1 and <= 5998 ? minutes : null;
+        return minutes is >= 1 and < 5939 ? minutes : null;
     }
 }
 
