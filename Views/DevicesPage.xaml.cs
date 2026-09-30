@@ -66,8 +66,10 @@ public sealed partial class DevicesPage : Page
         }
 
         var empty = Devices.Count == 0;
+        var dashboard = App.Repository.Settings.Layout == HomeLayout.Dashboard;
         EmptyPanel.Visibility = Ui.VisibleIf(empty);
-        DevicesList.Visibility = Ui.VisibleIf(!empty);
+        DevicesList.Visibility = Ui.VisibleIf(!empty && !dashboard);
+        TilesGrid.Visibility = Ui.VisibleIf(!empty && dashboard);
         SyncButton.Visibility = Ui.VisibleIf(App.Repository.Credentials?.HasDeveloperKeys == true);
     }
 
@@ -78,7 +80,7 @@ public sealed partial class DevicesPage : Page
     }
 
     /// <summary>
-    /// Порядок після перетягування зберігається
+    /// Порядок після перетягування зберігається (і для списку, і для сітки плиток)
     /// </summary>
     private void DevicesList_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args) => SaveOrder();
 

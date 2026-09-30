@@ -58,6 +58,7 @@ public sealed partial class SettingsPage : Page
             _ => 2
         };
 
+        LayoutButtons.SelectedIndex = settings.Layout == HomeLayout.Dashboard ? 1 : 0;
         CloseToTrayToggle.IsOn = settings.CloseToTray;
         AutostartToggle.IsOn = settings.StartWithWindows;
 
@@ -97,6 +98,12 @@ public sealed partial class SettingsPage : Page
         };
         App.Repository.UpdateSettings(s => s.Theme = theme);
         App.MainWindow?.ApplyTheme(theme);
+    }
+
+    private void LayoutButtons_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loading && LayoutButtons.SelectedIndex >= 0)
+            App.Repository.UpdateSettings(s => s.Layout = LayoutButtons.SelectedIndex == 1 ? HomeLayout.Dashboard : HomeLayout.Compact);
     }
 
     private void CloseToTrayToggle_Toggled(object sender, RoutedEventArgs e)

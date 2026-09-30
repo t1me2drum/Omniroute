@@ -132,6 +132,49 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+
+            <!-- Десктопний дашборд: плитки в сітці (Налаштування → Вигляд головного екрана) -->
+            <GridView x:Name="TilesGrid"
+                      ItemsSource="{x:Bind Devices}"
+                      SelectionMode="None"
+                      IsItemClickEnabled="True"
+                      ItemClick="DevicesList_ItemClick"
+                      CanReorderItems="True"
+                      CanDragItems="True"
+                      AllowDrop="True"
+                      DragItemsCompleted="DevicesList_DragItemsCompleted"
+                      Padding="12,0,12,16"
+                      Visibility="Collapsed">
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="Margin" Value="0,0,12,12"/>
+                        <Setter Property="Padding" Value="0"/>
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Device">
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1" CornerRadius="8">
+                            <Border.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Перейменувати" Tag="{x:Bind SerialNumber}" Click="RenameItem_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Edit"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Видалити" Tag="{x:Bind SerialNumber}" Click="DeleteItem_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Delete"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Border.ContextFlyout>
+                            <views:StationTile Device="{x:Bind}"/>
+                        </Border>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
         </Grid>
     </Grid>
 </Page>

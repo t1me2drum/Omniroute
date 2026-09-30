@@ -55,8 +55,12 @@
                 <!-- Тема -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Тема" Style="{StaticResource CardTitleStyle}"/>
-                        <RadioButtons x:Name="ThemeButtons" MaxColumns="3" SelectionChanged="ThemeButtons_SelectionChanged">
+                        <TextBlock Text="Вигляд" Style="{StaticResource CardTitleStyle}"/>
+                        <RadioButtons x:Name="LayoutButtons" Header="Головний екран" MaxColumns="2" SelectionChanged="LayoutButtons_SelectionChanged">
+                            <x:String>Компактний список</x:String>
+                            <x:String>Дашборд плиток</x:String>
+                        </RadioButtons>
+                        <RadioButtons x:Name="ThemeButtons" Header="Тема" MaxColumns="3" SelectionChanged="ThemeButtons_SelectionChanged">
                             <x:String>Темна</x:String>
                             <x:String>Світла</x:String>
                             <x:String>Як у системі</x:String>

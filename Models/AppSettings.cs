@@ -33,6 +33,9 @@ public class AppSettings
     /// <summary>Запускати разом з Windows (згорнутим у трей)</summary>
     public bool StartWithWindows { get; set; }
 
+    /// <summary>Вигляд головного екрана: компактний список (як на телефоні) або дашборд плиток</summary>
+    public HomeLayout Layout { get; set; } = HomeLayout.Compact;
+
     // Сортування пристроїв
     public DeviceSortMode SortMode { get; set; } = DeviceSortMode.Custom;
 }
@@ -45,6 +48,15 @@ public enum ThemeMode
     Light,
     Dark,
     System
+}
+
+/// <summary>
+/// Вигляд головного екрана
+/// </summary>
+public enum HomeLayout
+{
+    Compact,    // Компактні картки списком
+    Dashboard   // Плитки в сітці з міні-графіком і перемикачами виходів
 }
 
 /// <summary>
