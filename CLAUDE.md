@@ -52,4 +52,6 @@ dotnet build -c Release -p:Platform=x64
 ## Граф знань (graphify)
 - `graphify-out/` лежить у репозиторії: `graph.json`, `graph.html` (відкривається в браузері), `GRAPH_REPORT.md`, семантичний кеш документів
 - На питання про архітектуру спершу відповідати через `graphify query "<питання>"`, а не читати файли підряд
-- Після помітних змін у коді оновити граф: `/graphify . --update`. Згенерований protoc-код виключено через `.graphifyignore`
+- Після помітних змін у коді оновити граф: `/graphify . --update` (без LLM: `graphify update .`). Згенерований protoc-код виключено через `.graphifyignore`
+- Інструмент — PyPI-пакет `graphifyy` 0.9.72 (на ПК встановлено через uv), скіл `/graphify` лежить у репозиторії: `.claude/skills/graphify` (копія того, що ставить `graphify install --platform claude`). Оновлюючи версію пакета, оновити й скіл
+- Хмарні сесії: `.claude/hooks/session-start.sh` (зареєстровано в `.claude/settings.json`, працює лише при `CLAUDE_CODE_REMOTE=true`) ставить `graphifyy`, .NET 8 SDK і відновлює пакети тестів
