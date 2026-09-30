@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Тести протоколів і логіки стану. Компілюють лише код без WinUI, тож запускаються будь-де:
-       dotnet test tests/Omniroute.Tests -->
+       dotnet test tests/PowerHub.Tests -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Omniroute.Tests</RootNamespace>
+    <RootNamespace>PowerHub.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

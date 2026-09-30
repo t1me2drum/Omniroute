@@ -1,6 +1,6 @@
 using System;
 
-namespace Omniroute.Models;
+namespace PowerHub.Models;
 
 /// <summary>
 /// Запис історії заряду станції

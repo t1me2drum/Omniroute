@@ -8,11 +8,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Navigation;
-using Omniroute.Models;
-using Omniroute.Protocol;
-using Omniroute.Services;
+using PowerHub.Models;
+using PowerHub.Protocol;
+using PowerHub.Services;
 
-namespace Omniroute.Views;
+namespace PowerHub.Views;
 
 public sealed partial class DeviceDetailsPage : Page
 {

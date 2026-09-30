@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using Omniroute.Api;
-using Omniroute.Models;
-using Omniroute.Services;
+using PowerHub.Api;
+using PowerHub.Models;
+using PowerHub.Services;
 
-namespace Omniroute.Views;
+namespace PowerHub.Views;
 
 public sealed partial class LoginPage : Page
 {

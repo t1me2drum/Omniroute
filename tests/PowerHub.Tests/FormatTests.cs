@@ -1,8 +1,8 @@
-using Omniroute.Models;
-using Omniroute.Protocol;
+using PowerHub.Models;
+using PowerHub.Protocol;
 using Xunit;
 
-namespace Omniroute.Tests;
+namespace PowerHub.Tests;
 
 public class FormatTests
 {

@@ -10,12 +10,12 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-using Omniroute.Models;
-using Omniroute.Protocol;
-using Omniroute.Services;
+using PowerHub.Models;
+using PowerHub.Protocol;
+using PowerHub.Services;
 using Windows.Foundation;
 
-namespace Omniroute.Views;
+namespace PowerHub.Views;
 
 /// <summary>
 /// Плитка станції для десктопного дашборда: кільце заряду, потужності, стан мережі,

@@ -3,10 +3,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Omniroute.Models;
-using Omniroute.Views;
+using PowerHub.Models;
+using PowerHub.Views;
 
-namespace Omniroute;
+namespace PowerHub;
 
 public sealed partial class MainWindow : Window
 {
@@ -16,7 +16,7 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
 
-        Title = "Omniroute";
+        Title = "PowerHub";
         try
         {
             AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico"));

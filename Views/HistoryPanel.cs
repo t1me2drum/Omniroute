@@ -8,10 +8,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-using Omniroute.Models;
+using PowerHub.Models;
 using Windows.Foundation;
 
-namespace Omniroute.Views;
+namespace PowerHub.Views;
 
 /// <summary>
 /// Графіки історії (як HistoryPane в Android-версії): заряд і потужність за 6 год, 24 год, 7 і 30 днів,

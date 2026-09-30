@@ -4,9 +4,9 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Omniroute.Models;
+using PowerHub.Models;
 
-namespace Omniroute.Views;
+namespace PowerHub.Views;
 
 /// <summary>
 /// Спільні кольори й діалоги сторінок
@@ -68,9 +68,9 @@ public static class Ui
     public static async Task<bool> ConfirmDeleteAsync(XamlRoot root, Device device)
     {
         var text = device.IsImported
-            ? "Станцію буде прибрано лише з Omniroute на цьому комп'ютері. В акаунті EcoFlow і в офіційному " +
+            ? "Станцію буде прибрано лише з PowerHub на цьому комп'ютері. В акаунті EcoFlow і в офіційному " +
               "застосунку вона лишиться. Під час синхронізації вона не повернеться; відновити можна в Налаштуваннях."
-            : "Станцію буде прибрано лише з Omniroute на цьому комп'ютері. В акаунті EcoFlow вона лишиться.";
+            : "Станцію буде прибрано лише з PowerHub на цьому комп'ютері. В акаунті EcoFlow вона лишиться.";
 
         var dialog = new ContentDialog
         {

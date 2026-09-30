@@ -3,17 +3,61 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace Omniroute.Data;
+namespace PowerHub.Data;
 
 /// <summary>
-/// Просте сховище ключ-значення у файлі %LocalAppData%\Omniroute\settings.json.
+/// Просте сховище ключ-значення у файлі %LocalAppData%\PowerHub\settings.json.
 /// Замінює ApplicationData.LocalSettings, яке недоступне без MSIX-пакета.
 /// </summary>
 public sealed class LocalStore
 {
     public static readonly string AppFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "PowerHub");
+
+    /// <summary>
+    /// Папка даних до перейменування застосунку (версії до 0.4.0 звалися Omniroute)
+    /// </summary>
+    private static readonly string LegacyFolder = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "Omniroute");
+
+    static LocalStore()
+    {
+        MigrateLegacyFolder();
+    }
+
+    /// <summary>
+    /// Перенести налаштування, історію й журнал зі старої папки, щоб не входити знову.
+    /// Облікові дані зашифровані DPAPI для користувача Windows, тож переносяться як є.
+    /// Виконується до першого звернення до файлів (статичний конструктор).
+    /// </summary>
+    private static void MigrateLegacyFolder()
+    {
+        try
+        {
+            if (!Directory.Exists(LegacyFolder) || File.Exists(Path.Combine(AppFolder, "settings.json")))
+                return;
+
+            if (!Directory.Exists(AppFolder))
+            {
+                Directory.Move(LegacyFolder, AppFolder);
+                return;
+            }
+
+            // Нова папка вже є (напр. порожня) — копіюємо файли, яких у ній немає
+            foreach (var file in Directory.GetFiles(LegacyFolder))
+            {
+                var target = Path.Combine(AppFolder, Path.GetFileName(file));
+                if (!File.Exists(target))
+                    File.Copy(file, target);
+            }
+        }
+        catch
+        {
+            // Старі файли зайняті (запущено стару версію) — лишаємо як є, користувач увійде знову
+        }
+    }
 
     private static readonly Lazy<LocalStore> _default = new(() => new LocalStore(Path.Combine(AppFolder, "settings.json")));
 

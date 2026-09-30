@@ -1,8 +1,10 @@
-# Omniroute — контекст для Claude
+# PowerHub — контекст для Claude
 
-WinUI 3 клієнт для Windows 11 для моніторингу й керування зарядними станціями EcoFlow.
-Порт Android-застосунку PowerHub: https://github.com/t1me2drum/Ecoflow-mon-android
+WinUI 3 клієнт для Windows 11 для моніторингу й керування зарядними станціями EcoFlow —
+Windows-версія Android-застосунку PowerHub: https://github.com/t1me2drum/Ecoflow-mon-android
 (коли логіка протоколів неясна, еталоном є він).
+Репозиторій: https://github.com/t1me2drum/PowerHub. До версії 0.4.0 проєкт звався Omniroute (репозиторій, простір імен, exe);
+дані зі старої папки `%LocalAppData%\Omniroute` переносяться при першому запуску (`LocalStore.MigrateLegacyFolder`), старий запис автозапуску прибирає `Autostart`.
 
 ## Стек
 - .NET 8, `net8.0-windows10.0.22621.0`, WinUI 3 / Windows App SDK 1.5, платформи x64 та ARM64
@@ -14,13 +16,13 @@ WinUI 3 клієнт для Windows 11 для моніторингу й керу
 ```bash
 dotnet build -c Release -p:Platform=x64
 ```
-Результат: `bin/x64/Release/net8.0-windows10.0.22621.0/win-x64/Omniroute.exe` (запускати разом з усією папкою).
-Дані застосунку лежать у `%LocalAppData%\Omniroute\`: `settings.json` (налаштування, станції, зашифровані облікові дані), `history.db`, `diag.log` (журнал діагностики, як DiagLog в Android: з'єднання, збої розбору з hex-префіксом кадру, невдалі команди, падіння).
+Результат: `bin/x64/Release/net8.0-windows10.0.22621.0/win-x64/PowerHub.exe` (запускати разом з усією папкою).
+Дані застосунку лежать у `%LocalAppData%\PowerHub\`: `settings.json` (налаштування, станції, зашифровані облікові дані), `history.db`, `diag.log` (журнал діагностики, як DiagLog в Android: з'єднання, збої розбору з hex-префіксом кадру, невдалі команди, падіння).
 Через те що пакета немає, `ApplicationData`/`Windows.Storage` не використовуємо, лише `Data/LocalStore`.
 
 ### Перевірка без Windows (Linux, хмарні сесії Claude)
-- `dotnet test tests/Omniroute.Tests` — тести протоколів, логіки стану й форматування (перенесені з Android `app/src/test`); компілюють лише `Protocol/`, `Models/DeviceModel.cs`, `Models/Format.cs`
-- `tools/check-build/check.sh` — компілює весь C# проти справжніх збірок Windows App SDK; XAML-компілятор на Linux не працює, тому `genstubs.py` генерує заглушки `x:Name`/`InitializeComponent` і перевіряє обробники подій та шляхи `x:Bind`. Успіх — `Check -> …OmnirouteCheck.dll` без `error CS` (MSB4062 після нього очікувані). Саму розмітку XAML перевіряє лише збирання на Windows
+- `dotnet test tests/PowerHub.Tests` — тести протоколів, логіки стану й форматування (перенесені з Android `app/src/test`); компілюють лише `Protocol/`, `Models/DeviceModel.cs`, `Models/Format.cs`
+- `tools/check-build/check.sh` — компілює весь C# проти справжніх збірок Windows App SDK; XAML-компілятор на Linux не працює, тому `genstubs.py` генерує заглушки `x:Name`/`InitializeComponent` і перевіряє обробники подій та шляхи `x:Bind`. Успіх — `Check -> …PowerHubCheck.dll` без `error CS` (MSB4062 після нього очікувані). Саму розмітку XAML перевіряє лише збирання на Windows
 - .NET 8 SDK на Ubuntu: `apt-get install dotnet-sdk-8.0` (dot.net через проксі недоступний)
 
 ## Структура

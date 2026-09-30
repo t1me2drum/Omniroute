@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Omniroute.Protocol.Proto;
-using static Omniroute.Protocol.Controls;
+using PowerHub.Protocol.Proto;
+using static PowerHub.Protocol.Controls;
 
-namespace Omniroute.Protocol;
+namespace PowerHub.Protocol;
 
 /// <summary>
 /// Delta Pro 3: телеметрія приходить у protobuf, команди — JSON "TCP"-повідомлення з числовим id параметра.

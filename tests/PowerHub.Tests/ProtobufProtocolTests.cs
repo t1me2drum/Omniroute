@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
 using Google.Protobuf;
-using Omniroute.Protocol;
-using Omniroute.Protocol.Proto;
+using PowerHub.Protocol;
+using PowerHub.Protocol.Proto;
 using Xunit;
 
-namespace Omniroute.Tests;
+namespace PowerHub.Tests;
 
 /// <summary>
 /// Перенесено з Android-версії (ProtobufProtocolTest.kt)

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
-using Omniroute.Models;
-using Omniroute.Protocol;
+using PowerHub.Models;
+using PowerHub.Protocol;
 
-namespace Omniroute.Services;
+namespace PowerHub.Services;
 
 /// <summary>
 /// Сповіщення Windows за правилами AlertEngine з Android-версії: кожне правило спрацьовує один раз,

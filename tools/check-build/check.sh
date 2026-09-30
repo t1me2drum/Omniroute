@@ -7,7 +7,7 @@ set -e
 cd "$(dirname "$0")"
 mkdir -p Stubs
 python3 genstubs.py ../.. Stubs
-printf 'namespace Omniroute;\npublic static class __Program { [System.STAThread] public static void Main() { } }\n' > Stubs/Program.g.cs
-# Успіх — рядок «Check -> …OmnirouteCheck.dll» без «error CS». Помилки MSB4062 після нього очікувані:
+printf 'namespace PowerHub;\npublic static class __Program { [System.STAThread] public static void Main() { } }\n' > Stubs/Program.g.cs
+# Успіх — рядок «Check -> …PowerHubCheck.dll» без «error CS». Помилки MSB4062 після нього очікувані:
 # це кроки пакування (PRI/AppX), для яких потрібен Windows-інструментарій
-dotnet build -c Release -nologo -clp:NoSummary 2>&1 | grep -E "error|warning CS|OmnirouteCheck.dll" || true
+dotnet build -c Release -nologo -clp:NoSummary 2>&1 | grep -E "error|warning CS|PowerHubCheck.dll" || true

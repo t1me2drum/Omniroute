@@ -1,4 +1,4 @@
-namespace Omniroute.Protocol;
+namespace PowerHub.Protocol;
 
 /// <summary>
 /// Стан мережі з урахуванням напруги

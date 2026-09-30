@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Omniroute.Services;
+namespace PowerHub.Services;
 
 /// <summary>
 /// Іконка в області сповіщень Windows (аналог постійного сповіщення й віджета Android-версії).
@@ -29,7 +29,7 @@ public sealed class TrayIcon : IDisposable
     private readonly IntPtr _hwnd;
     private readonly IntPtr _icon;
     private readonly uint _taskbarCreated;
-    private string _tip = "Omniroute";
+    private string _tip = "PowerHub";
     private bool _added;
 
     /// <summary>Лівий клік або пункт «Відкрити»</summary>
@@ -41,7 +41,7 @@ public sealed class TrayIcon : IDisposable
     public TrayIcon(string iconPath)
     {
         _wndProc = WindowProc;
-        var className = "OmnirouteTray_" + Environment.ProcessId;
+        var className = "PowerHubTray_" + Environment.ProcessId;
         var wc = new WNDCLASSEX
         {
             cbSize = (uint)Marshal.SizeOf<WNDCLASSEX>(),
@@ -52,7 +52,7 @@ public sealed class TrayIcon : IDisposable
         RegisterClassEx(ref wc);
 
         // Звичайне (не message-only) приховане вікно: лише такі отримують TaskbarCreated після перезапуску провідника
-        _hwnd = CreateWindowEx(0, className, "Omniroute tray", 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, wc.hInstance, IntPtr.Zero);
+        _hwnd = CreateWindowEx(0, className, "PowerHub tray", 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, wc.hInstance, IntPtr.Zero);
         _taskbarCreated = RegisterWindowMessage("TaskbarCreated");
 
         _icon = File.Exists(iconPath)
@@ -122,7 +122,7 @@ public sealed class TrayIcon : IDisposable
     private void ShowMenu()
     {
         var menu = CreatePopupMenu();
-        AppendMenu(menu, MF_STRING, CmdOpen, "Відкрити Omniroute");
+        AppendMenu(menu, MF_STRING, CmdOpen, "Відкрити PowerHub");
         AppendMenu(menu, MF_SEPARATOR, 0, null);
         AppendMenu(menu, MF_STRING, CmdExit, "Вийти");
 

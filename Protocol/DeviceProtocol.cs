@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Omniroute.Protocol;
+namespace PowerHub.Protocol;
 
 /// <summary>
 /// Параметри пристрою (плоский словник ключ-значення)

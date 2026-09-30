@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using Omniroute.Protocol;
+using PowerHub.Protocol;
 using Xunit;
 
-namespace Omniroute.Tests;
+namespace PowerHub.Tests;
 
 /// <summary>
 /// Перенесено з Android-версії (JsonProtocolTest.kt)

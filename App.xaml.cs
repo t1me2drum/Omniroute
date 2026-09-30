@@ -2,20 +2,20 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using Microsoft.Windows.AppNotifications;
-using Omniroute.Data;
-using Omniroute.Services;
+using PowerHub.Data;
+using PowerHub.Services;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace Omniroute;
+namespace PowerHub;
 
 public partial class App : Application
 {
     // Один екземпляр на користувача: другий запуск лише показує вікно першого
-    private const string InstanceMutexName = @"Local\Omniroute.SingleInstance";
-    private const string ActivateEventName = @"Local\Omniroute.Activate";
+    private const string InstanceMutexName = @"Local\PowerHub.SingleInstance";
+    private const string ActivateEventName = @"Local\PowerHub.Activate";
 
     private static Mutex? _instanceMutex;
     private static EventWaitHandle? _activateEvent;
@@ -39,7 +39,7 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Необроблений виняток іде в журнал діагностики (%LocalAppData%\Omniroute\diag.log)
+    /// Необроблений виняток іде в журнал діагностики (%LocalAppData%\PowerHub\diag.log)
     /// </summary>
     private static void LogCrash(Exception? ex) => DiagLog.Log("CRASH", "необроблений виняток", ex);
 
@@ -65,8 +65,8 @@ public partial class App : Application
 
         // Моніторинг оновлює станції та показує сповіщення в UI-потоці
         MonitorService.Initialize(_dispatcher);
-        MonitorService.ParamsUpdated += () => _tray?.SetTooltip("Omniroute\n" + MonitorService.Summary());
-        MonitorService.StatusChanged += _ => _tray?.SetTooltip("Omniroute\n" + MonitorService.Summary());
+        MonitorService.ParamsUpdated += () => _tray?.SetTooltip("PowerHub\n" + MonitorService.Summary());
+        MonitorService.StatusChanged += _ => _tray?.SetTooltip("PowerHub\n" + MonitorService.Summary());
 
         _tray = new TrayIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico"));
         _tray.OpenRequested += () => ShowMainWindow();
@@ -106,7 +106,7 @@ public partial class App : Application
         })
         {
             IsBackground = true,
-            Name = "Omniroute activation"
+            Name = "PowerHub activation"
         };
         thread.Start();
         return true;

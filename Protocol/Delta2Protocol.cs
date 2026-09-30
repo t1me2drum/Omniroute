@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using static Omniroute.Protocol.Controls;
+using static PowerHub.Protocol.Controls;
 
-namespace Omniroute.Protocol;
+namespace PowerHub.Protocol;
 
 /// <summary>
 /// Delta 2 і Delta 2 Max працюють з JSON через MQTT API застосунку.

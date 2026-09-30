@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Omniroute.Models;
+namespace PowerHub.Models;
 
 /// <summary>
 /// Облікові дані користувача EcoFlow (зберігаються зашифрованими).

@@ -8,7 +8,7 @@ using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
 
-namespace Omniroute.Api;
+namespace PowerHub.Api;
 
 /// <summary>
 /// MQTT клієнт для підключення до EcoFlow брокера

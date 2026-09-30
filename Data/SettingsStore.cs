@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Omniroute.Models;
+using PowerHub.Models;
 
-namespace Omniroute.Data;
+namespace PowerHub.Data;
 
 /// <summary>
 /// Зберігання налаштувань застосунку

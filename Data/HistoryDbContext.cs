@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Omniroute.Models;
+using PowerHub.Models;
 
-namespace Omniroute.Data;
+namespace PowerHub.Data;
 
 /// <summary>
 /// Контекст бази даних для історії.

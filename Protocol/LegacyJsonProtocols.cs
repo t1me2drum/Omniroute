@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using static Omniroute.Protocol.Controls;
+using static PowerHub.Protocol.Controls;
 
-namespace Omniroute.Protocol;
+namespace PowerHub.Protocol;
 
 /// <summary>
 /// Delta Max: старіша JSON-прошивка з ключами `bmsMaster.*` / `ems.*` і числовими "TCP"-командами.

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
-using Omniroute.Api;
-using Omniroute.Models;
-using Omniroute.Protocol;
+using PowerHub.Api;
+using PowerHub.Models;
+using PowerHub.Protocol;
 
-namespace Omniroute.Services;
+namespace PowerHub.Services;
 
 /// <summary>
 /// Фоновий сервіс моніторингу станцій через MQTT.

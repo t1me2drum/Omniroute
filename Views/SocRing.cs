@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 
-namespace Omniroute.Views;
+namespace PowerHub.Views;
 
 /// <summary>
 /// Кільце заряду батареї (як SocRing в Android-версії). Коли станція заряджається від мережі,

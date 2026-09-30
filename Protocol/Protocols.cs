@@ -1,6 +1,6 @@
-using Omniroute.Models;
+using PowerHub.Models;
 
-namespace Omniroute.Protocol;
+namespace PowerHub.Protocol;
 
 /// <summary>
 /// Протокол для кожної підтримуваної моделі (як DeviceModel.protocol в Android-версії)

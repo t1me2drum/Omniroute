@@ -2,9 +2,9 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Omniroute.Models;
+using PowerHub.Models;
 
-namespace Omniroute.Data;
+namespace PowerHub.Data;
 
 /// <summary>
 /// Зберігання облікових даних користувача (шифрування DPAPI для поточного користувача Windows)

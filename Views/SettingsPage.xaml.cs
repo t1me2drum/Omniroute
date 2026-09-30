@@ -4,11 +4,11 @@ using System.IO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Omniroute.Models;
-using Omniroute.Services;
+using PowerHub.Models;
+using PowerHub.Services;
 using Windows.ApplicationModel.DataTransfer;
 
-namespace Omniroute.Views;
+namespace PowerHub.Views;
 
 public sealed partial class SettingsPage : Page
 {
@@ -71,7 +71,7 @@ public sealed partial class SettingsPage : Page
         LowBatterySlider.Value = settings.LowBatteryThreshold;
         UpdateSliderLabels();
 
-        VersionText.Text = $"Omniroute {typeof(App).Assembly.GetName().Version?.ToString(3)} — Windows-клієнт для станцій EcoFlow";
+        VersionText.Text = $"PowerHub {typeof(App).Assembly.GetName().Version?.ToString(3)} — Windows-клієнт для станцій EcoFlow";
         UpdateDiagText();
         LoadHidden();
 

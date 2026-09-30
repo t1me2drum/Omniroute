@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Omniroute.Api;
-using Omniroute.Models;
+using PowerHub.Api;
+using PowerHub.Models;
 
-namespace Omniroute.Data;
+namespace PowerHub.Data;
 
 /// <summary>
 /// Результат синхронізації списку станцій з акаунтом

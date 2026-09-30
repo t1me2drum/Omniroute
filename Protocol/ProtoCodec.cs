@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
-using Omniroute.Protocol.Proto;
+using PowerHub.Protocol.Proto;
 
-namespace Omniroute.Protocol;
+namespace PowerHub.Protocol;
 
 /// <summary>
 /// Обгортка кадрів для protobuf-моделей (Delta 3, Delta Pro 3).

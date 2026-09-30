@@ -1,5 +1,5 @@
 <Page
-    x:Class="Omniroute.Views.SettingsPage"
+    x:Class="PowerHub.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -100,7 +100,7 @@
                 <Border x:Name="HiddenCard" Style="{StaticResource CardStyle}" Visibility="Collapsed">
                     <StackPanel Spacing="8">
                         <TextBlock Text="Видалені станції" Style="{StaticResource CardTitleStyle}"/>
-                        <TextBlock Style="{StaticResource HintStyle}" Text="Є в акаунті EcoFlow, але приховані в Omniroute."/>
+                        <TextBlock Style="{StaticResource HintStyle}" Text="Є в акаунті EcoFlow, але приховані в PowerHub."/>
                         <StackPanel x:Name="HiddenList" Spacing="8"/>
                     </StackPanel>
                 </Border>

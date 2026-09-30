@@ -1,8 +1,8 @@
-using Omniroute.Models;
-using Omniroute.Protocol;
+using PowerHub.Models;
+using PowerHub.Protocol;
 using Xunit;
 
-namespace Omniroute.Tests;
+namespace PowerHub.Tests;
 
 /// <summary>
 /// Перенесено з Android-версії (DeviceStateTest.kt)

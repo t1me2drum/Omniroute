@@ -3,12 +3,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Omniroute.Services;
+namespace PowerHub.Services;
 
 /// <summary>
 /// Журнал діагностики, яким користувач може поділитися, коли щось працює не так
 /// (як DiagLog в Android-версії): зміни з'єднання, збої розбору даних, невдалі команди й падіння.
-/// Файл: %LocalAppData%\Omniroute\diag.log. Паролі, токени, ключі й облікові дані MQTT сюди не передавати.
+/// Файл: %LocalAppData%\PowerHub\diag.log. Паролі, токени, ключі й облікові дані MQTT сюди не передавати.
 /// </summary>
 public static class DiagLog
 {
@@ -93,7 +93,7 @@ public static class DiagLog
     public static string ExportText()
     {
         var version = typeof(DiagLog).Assembly.GetName().Version?.ToString(3) ?? "?";
-        return $"Omniroute {version} · {Environment.OSVersion.VersionString} · {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}\n\n{Read()}";
+        return $"PowerHub {version} · {Environment.OSVersion.VersionString} · {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}\n\n{Read()}";
     }
 
     /// <summary>

@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace Omniroute.Protocol.Proto {
+namespace PowerHub.Protocol.Proto {
 
   /// <summary>Holder for reflection information generated from ef_delta3.proto</summary>
   public static partial class EfDelta3Reflection {
@@ -451,19 +451,19 @@ namespace Omniroute.Protocol.Proto {
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3Header), global::Omniroute.Protocol.Proto.Delta3Header.Parser, new[]{ "Pdata", "Src", "Dest", "DSrc", "DDest", "EncType", "CheckType", "CmdFunc", "CmdId", "DataLen", "NeedAck", "IsAck", "Seq", "ProductId", "Version", "PayloadVer", "TimeSnap", "IsRwCmd", "IsQueue", "AckType", "Code", "From", "ModuleSn", "DeviceSn" }, new[]{ "Pdata", "Src", "Dest", "DSrc", "DDest", "EncType", "CheckType", "CmdFunc", "CmdId", "DataLen", "NeedAck", "IsAck", "Seq", "ProductId", "Version", "PayloadVer", "TimeSnap", "IsRwCmd", "IsQueue", "AckType", "Code", "From", "ModuleSn", "DeviceSn" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3SendHeaderMsg), global::Omniroute.Protocol.Proto.Delta3SendHeaderMsg.Parser, new[]{ "Msg" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3DisplayPropertyUpload), global::Omniroute.Protocol.Proto.Delta3DisplayPropertyUpload.Parser, new[]{ "Errcode", "PowInSumW", "PowOutSumW", "EnergyBackupEn", "EnergyBackupStartSoc", "PowGetQcusb1", "PowGetQcusb2", "PowGetTypec1", "PowGetTypec2", "FlowInfoQcusb1", "FlowInfoQcusb2", "FlowInfoTypec1", "FlowInfoTypec2", "DevStandbyTime", "ScreenOffTime", "AcStandbyTime", "DcStandbyTime", "AcAlwaysOnFlag", "AcAlwaysOnMiniSoc", "XboostEn", "PcsFanLevel", "FlowInfo12V", "PowGet12V", "FlowInfoAc2Dc", "FlowInfoDc2Ac", "FlowInfoAcIn", "PowGetAc", "PowGetAcIn", "PlugInInfoAcInFlag", "PlugInInfoAcInFeq", "DcOutOpen", "CfgAcOutOpen", "PowGetDcp2", "FlowInfoDcp2In", "FlowInfoDcp2Out", "PlugInInfoDcp2InFlag", "PlugInInfoDcp2DsgChgType", "PlugInInfoDcp2ChargerFlag", "PlugInInfoDcp2Type", "PlugInInfoDcp2Detail", "PlugInInfoDcp2Sn", "PlugInInfoDcp2RunState", "PlugInInfoDcp2FirmVer", "BmsErrCode", "BanBypassEn", "OutputPowerOffMemory", "PvChgType", "FlowInfoBmsDsg", "FlowInfoBmsChg", "PowGetBms", "EnBeep", "PlugInInfoAcChargerFlag", "PlugInInfoAcInChgPowMax", "AcOutFreq", "DevSleepState", "PdErrCode", "MpptErrCode", "LlcHvLvFlag", "LlcInvErrCode", "PlugInInfoAcOutDsgPowMax", "BmsBattSoc", "BmsBattSoh", "BmsDesignCap", "BmsDsgRemTime", "BmsChgRemTime", "BmsMinCellTemp", "BmsMaxCellTemp", "BmsMinMosTemp", "BmsMaxMosTemp", "CmsBattSoc", "CmsBattSoh", "CmsDsgRemTime", "CmsChgRemTime", "CmsMaxChgSoc", "CmsMinDsgSoc", "CmsBmsRunState", "BmsChgDsgState", "CmsChgDsgState", "TimeTaskConflictFlag", "TimeTaskChangeCnt", "UpsAlram", "PlugInInfoPvDcAmpMax", "LedMode", "LowPowerAlarm", "SilenceChgWatt", "FlowInfoPv", "PowGetPv", "PlugInInfoPvFlag", "PlugInInfoPvType", "PlugInInfoPvChargerFlag", "PlugInInfoPvChgAmpMax", "PlugInInfoPvChgVolMax", "FlowInfoAcOut", "PowGetAcOut", "EnergyStrategyOperateMode", "SelfPoweredConflictFlag", "TouModeConflictFlag", "FlowInfoDcpIn", "FlowInfoDcpOut", "PowGetDcp", "PlugInInfoDcpInFlag", "PlugInInfoDcpType", "PlugInInfoDcpDetail", "PlugInInfoDcpDsgChgType", "PlugInInfoDcpSn", "PlugInInfoDcpFirmVer", "PlugInInfoDcpChargerFlag", "PlugInInfoDcpRunState", "PlugInInfoDcpErrCode", "PlugInInfoDcp2ErrCode", "PlugInInfoAcInChgMode", "PlugInInfoAcInChgHalPowMax", "BackupReverseSoc" }, new[]{ "Errcode", "PowInSumW", "PowOutSumW", "EnergyBackupEn", "EnergyBackupStartSoc", "PowGetQcusb1", "PowGetQcusb2", "PowGetTypec1", "PowGetTypec2", "FlowInfoQcusb1", "FlowInfoQcusb2", "FlowInfoTypec1", "FlowInfoTypec2", "DevStandbyTime", "ScreenOffTime", "AcStandbyTime", "DcStandbyTime", "AcAlwaysOnFlag", "AcAlwaysOnMiniSoc", "XboostEn", "PcsFanLevel", "FlowInfo12V", "PowGet12V", "FlowInfoAc2Dc", "FlowInfoDc2Ac", "FlowInfoAcIn", "PowGetAc", "PowGetAcIn", "PlugInInfoAcInFlag", "PlugInInfoAcInFeq", "DcOutOpen", "CfgAcOutOpen", "PowGetDcp2", "FlowInfoDcp2In", "FlowInfoDcp2Out", "PlugInInfoDcp2InFlag", "PlugInInfoDcp2DsgChgType", "PlugInInfoDcp2ChargerFlag", "PlugInInfoDcp2Type", "PlugInInfoDcp2Detail", "PlugInInfoDcp2Sn", "PlugInInfoDcp2RunState", "PlugInInfoDcp2FirmVer", "BmsErrCode", "BanBypassEn", "OutputPowerOffMemory", "PvChgType", "FlowInfoBmsDsg", "FlowInfoBmsChg", "PowGetBms", "EnBeep", "PlugInInfoAcChargerFlag", "PlugInInfoAcInChgPowMax", "AcOutFreq", "DevSleepState", "PdErrCode", "MpptErrCode", "LlcHvLvFlag", "LlcInvErrCode", "PlugInInfoAcOutDsgPowMax", "BmsBattSoc", "BmsBattSoh", "BmsDesignCap", "BmsDsgRemTime", "BmsChgRemTime", "BmsMinCellTemp", "BmsMaxCellTemp", "BmsMinMosTemp", "BmsMaxMosTemp", "CmsBattSoc", "CmsBattSoh", "CmsDsgRemTime", "CmsChgRemTime", "CmsMaxChgSoc", "CmsMinDsgSoc", "CmsBmsRunState", "BmsChgDsgState", "CmsChgDsgState", "TimeTaskConflictFlag", "TimeTaskChangeCnt", "UpsAlram", "PlugInInfoPvDcAmpMax", "LedMode", "LowPowerAlarm", "SilenceChgWatt", "FlowInfoPv", "PowGetPv", "PlugInInfoPvFlag", "PlugInInfoPvType", "PlugInInfoPvChargerFlag", "PlugInInfoPvChgAmpMax", "PlugInInfoPvChgVolMax", "FlowInfoAcOut", "PowGetAcOut", "EnergyStrategyOperateMode", "SelfPoweredConflictFlag", "TouModeConflictFlag", "FlowInfoDcpIn", "FlowInfoDcpOut", "PowGetDcp", "PlugInInfoDcpInFlag", "PlugInInfoDcpType", "PlugInInfoDcpDetail", "PlugInInfoDcpDsgChgType", "PlugInInfoDcpSn", "PlugInInfoDcpFirmVer", "PlugInInfoDcpChargerFlag", "PlugInInfoDcpRunState", "PlugInInfoDcpErrCode", "PlugInInfoDcp2ErrCode", "PlugInInfoAcInChgMode", "PlugInInfoAcInChgHalPowMax", "BackupReverseSoc" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3RuntimePropertyUpload), global::Omniroute.Protocol.Proto.Delta3RuntimePropertyUpload.Parser, new[]{ "AcPhaseType", "PcsWorkMode", "TempPcsDc", "TempPcsAc", "PlugInInfoAcOutType", "PlugInInfoAcOutFreq", "PlugInInfoAcOutVol", "PlugInInfoAcInVol", "PlugInInfoBmsVol", "PdMpptCommErr", "PdLlcCommErr", "PdBmsCommErr", "PdIotCommErr", "PdFirmVer", "IotFirmVer", "MpptFirmVer", "PlugInInfoAcInAmp", "PlugInInfoAcOutAmp", "LlcInvFirmVer", "BmsFirmVer", "BmsBattVol", "BmsBattAmp", "BmsBalState", "BmsFullCap", "BmsRemainCap", "BmsAlmState", "BmsProState", "BmsFltState", "BmsErrCode", "BmsMinCellVol", "BmsMaxCellVol", "CmsBattVol", "CmsBattAmp", "CmsChgReqVol", "CmsChgReqAmp", "BmsOverloadIcon", "BmsWarnIcon", "BmsHighTempIcon", "BmsLowTempIcon", "BmsLimitIcon", "BmsAlmState2", "BmsProState2", "DisplayPropertyFullUploadPeriod", "DisplayPropertyIncrementalUploadPeriod", "RuntimePropertyFullUploadPeriod", "RuntimePropertyIncrementalUploadPeriod", "PvVinRef", "InvMainFsmstate", "L1MainFsmstate", "DcdcChgReqCur", "LlcRecvCmsChgReqVol", "TempPv", "PlugInInfoPvVol", "PlugInInfoPvAmp", "PlugInInfo12VVol", "PlugInInfo12VAmp", "LlcBatVol", "LlcBatCur", "LlcBusVol", "PlugInInfoDcpVol", "PlugInInfoDcpAmp" }, new[]{ "AcPhaseType", "PcsWorkMode", "TempPcsDc", "TempPcsAc", "PlugInInfoAcOutType", "PlugInInfoAcOutFreq", "PlugInInfoAcOutVol", "PlugInInfoAcInVol", "PlugInInfoBmsVol", "PdMpptCommErr", "PdLlcCommErr", "PdBmsCommErr", "PdIotCommErr", "PdFirmVer", "IotFirmVer", "MpptFirmVer", "PlugInInfoAcInAmp", "PlugInInfoAcOutAmp", "LlcInvFirmVer", "BmsFirmVer", "BmsBattVol", "BmsBattAmp", "BmsBalState", "BmsFullCap", "BmsRemainCap", "BmsAlmState", "BmsProState", "BmsFltState", "BmsErrCode", "BmsMinCellVol", "BmsMaxCellVol", "CmsBattVol", "CmsBattAmp", "CmsChgReqVol", "CmsChgReqAmp", "BmsOverloadIcon", "BmsWarnIcon", "BmsHighTempIcon", "BmsLowTempIcon", "BmsLimitIcon", "BmsAlmState2", "BmsProState2", "DisplayPropertyFullUploadPeriod", "DisplayPropertyIncrementalUploadPeriod", "RuntimePropertyFullUploadPeriod", "RuntimePropertyIncrementalUploadPeriod", "PvVinRef", "InvMainFsmstate", "L1MainFsmstate", "DcdcChgReqCur", "LlcRecvCmsChgReqVol", "TempPv", "PlugInInfoPvVol", "PlugInInfoPvAmp", "PlugInInfo12VVol", "PlugInInfo12VAmp", "LlcBatVol", "LlcBatCur", "LlcBusVol", "PlugInInfoDcpVol", "PlugInInfoDcpAmp" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3SetCommand), global::Omniroute.Protocol.Proto.Delta3SetCommand.Parser, new[]{ "CfgPowerOff", "CfgUtcTime", "CfgUtcTimezone", "EnBeep", "AcStandbyTime", "DcStandbyTime", "ScreenOffTime", "DevStandbyTime", "LcdLight", "CfgDc12VOutOpen", "CfgUsbOpen", "XboostEn", "BanBypassEn", "CmsMaxChgSoc", "CmsMinDsgSoc", "CfgEnergyBackup", "PlugInInfoAcInChgPowMax", "CfgAcOutOpen", "PlugInInfoPvDcAmpMax", "CfgLedMode", "PvChgType", "BackupReverseSoc", "EnergyStrategyOperateMode", "PlugInInfoAcInChgMode", "OutputPowerOffMemory" }, new[]{ "CfgPowerOff", "CfgUtcTime", "CfgUtcTimezone", "EnBeep", "AcStandbyTime", "DcStandbyTime", "ScreenOffTime", "DevStandbyTime", "LcdLight", "CfgDc12VOutOpen", "CfgUsbOpen", "XboostEn", "BanBypassEn", "CmsMaxChgSoc", "CmsMinDsgSoc", "CfgEnergyBackup", "PlugInInfoAcInChgPowMax", "CfgAcOutOpen", "PlugInInfoPvDcAmpMax", "CfgLedMode", "PvChgType", "BackupReverseSoc", "EnergyStrategyOperateMode", "PlugInInfoAcInChgMode", "OutputPowerOffMemory" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3SetReply), global::Omniroute.Protocol.Proto.Delta3SetReply.Parser, new[]{ "ActionId", "ConfigOk", "CfgUtcTime", "CfgUtcTimezone", "EnBeep", "AcStandbyTime", "DcStandbyTime", "ScreenOffTime", "DevStandbyTime", "LcdLight", "CfgDc12VOutOpen", "CfgUsbOpen", "XboostEn", "BanBypassEn", "CmsMaxChgSoc", "CmsMinDsgSoc", "CfgEnergyBackup", "PlugInInfoAcInChgPowMax", "DcOutOpen", "CfgAcOutOpen", "PlugInInfoPvDcAmpMax", "CfgLedMode", "PvChgType", "BackupReverseSoc", "EnergyStrategyOperateMode", "PlugInInfoAcInChgMode", "OutputPowerOffMemory" }, new[]{ "ActionId", "ConfigOk", "CfgUtcTime", "CfgUtcTimezone", "EnBeep", "AcStandbyTime", "DcStandbyTime", "ScreenOffTime", "DevStandbyTime", "LcdLight", "CfgDc12VOutOpen", "CfgUsbOpen", "XboostEn", "BanBypassEn", "CmsMaxChgSoc", "CmsMinDsgSoc", "CfgEnergyBackup", "PlugInInfoAcInChgPowMax", "DcOutOpen", "CfgAcOutOpen", "PlugInInfoPvDcAmpMax", "CfgLedMode", "PvChgType", "BackupReverseSoc", "EnergyStrategyOperateMode", "PlugInInfoAcInChgMode", "OutputPowerOffMemory" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup), global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup.Parser, new[]{ "EnergyBackupEn", "EnergyBackupStartSoc" }, new[]{ "EnergyBackupEn", "EnergyBackupStartSoc" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode), global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode.Parser, new[]{ "OperateSelfPoweredOpen", "OperateScheduledOpen", "OperateTouModeOpen" }, new[]{ "OperateSelfPoweredOpen", "OperateScheduledOpen", "OperateTouModeOpen" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3CMSHeartBeatReport), global::Omniroute.Protocol.Proto.Delta3CMSHeartBeatReport.Parser, new[]{ "Msg3221", "Msg3222" }, new[]{ "Msg3221", "Msg3222" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3CMSStatus1), global::Omniroute.Protocol.Proto.Delta3CMSStatus1.Parser, new[]{ "CmsStatusMisc1", "CmsStatusMisc2", "CmsStatusMisc3", "CmsBattVolMv", "CmsChgReqAmp", "CmsStatusMisc4", "CmsMaxChgSoc", "CmsMinDsgSoc", "AcOutFreq", "CmsStatusMisc5", "CmsStatusMisc6", "CmsChgRemTime", "CmsDsgRemTime", "CmsChgDsgState", "CmsBattSoc", "BmsIsConnState", "CmsStatusMisc7", "CmsStatusMisc8", "CmsStatusMisc9", "CmsStatusMisc10", "CmsStatusMisc11", "CmsStatusMisc12", "CmsOilOffSoc" }, new[]{ "CmsStatusMisc1", "CmsStatusMisc2", "CmsStatusMisc3", "CmsBattVolMv", "CmsChgReqAmp", "CmsStatusMisc4", "CmsMaxChgSoc", "CmsMinDsgSoc", "AcOutFreq", "CmsStatusMisc5", "CmsStatusMisc6", "CmsChgRemTime", "CmsDsgRemTime", "CmsChgDsgState", "CmsBattSoc", "CmsStatusMisc7", "CmsStatusMisc8", "CmsStatusMisc9", "CmsStatusMisc10", "CmsStatusMisc11", "CmsStatusMisc12", "CmsOilOffSoc" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3CMSStatus2), global::Omniroute.Protocol.Proto.Delta3CMSStatus2.Parser, new[]{ "CmsStatusMisc13", "CmsStatusMisc14", "CmsStatusMisc15", "CmsStatusMisc16", "CmsStatusMisc17" }, new[]{ "CmsStatusMisc13", "CmsStatusMisc14", "CmsStatusMisc15", "CmsStatusMisc16", "CmsStatusMisc17" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3BMSHeartBeatReport), global::Omniroute.Protocol.Proto.Delta3BMSHeartBeatReport.Parser, new[]{ "Num", "Type", "CellId", "ErrCode", "SysVer", "Soc", "Vol", "Amp", "Temp", "OpenBmsFlag", "DesignCap", "RemainCap", "FullCap", "Cycles", "Soh", "MaxCellVol", "MinCellVol", "MaxCellTemp", "MinCellTemp", "MaxMosTemp", "MinMosTemp", "BmsFault", "BqSysStatReg", "TagChgAmp", "F32ShowSoc", "InputWatts", "OutputWatts", "RemainTime", "MosState", "BalanceState", "MaxVolDiff", "CellSeriesNum", "CellVol", "CellNtcNum", "CellTemp", "HwVer", "BmsHeartbeatVer", "EcloudOcv", "BmsSn", "ProductType", "ProductDetail", "ActSoc", "DiffSoc", "TargetSoc", "SysLoaderVer", "SysState", "ChgDsgState", "AllErrCode", "AllBmsFault", "AccuChgCap", "AccuDsgCap", "RealSoh", "CalendarSoh", "CycleSoh", "MosNtcNum", "MosTemp", "EnvNtcNum", "EnvTemp", "HeatfilmNtcNum", "HeatfilmTemp", "CurSensorNtcNum", "CurSensorTemp", "MaxEnvTemp", "MinEnvTemp", "MaxHeatfilmTemp", "MinHeatfilmTemp", "MaxCurSensorTemp", "MinCurSensorTemp", "BalanceCmd", "RemainBalanceTime", "AfeSysStatus", "McuPinInStatus", "McuPinOutStatus", "BmsAlarmState1", "BmsAlarmState2", "BmsProtectState1", "BmsProtectState2", "BmsFaultState", "AccuChgEnergy", "AccuDsgEnergy", "PackSn", "WaterInFlag" }, new[]{ "Num", "Type", "CellId", "ErrCode", "SysVer", "Soc", "Vol", "Amp", "Temp", "OpenBmsFlag", "DesignCap", "RemainCap", "FullCap", "Cycles", "Soh", "MaxCellVol", "MinCellVol", "MaxCellTemp", "MinCellTemp", "MaxMosTemp", "MinMosTemp", "BmsFault", "BqSysStatReg", "TagChgAmp", "F32ShowSoc", "InputWatts", "OutputWatts", "RemainTime", "MosState", "BalanceState", "MaxVolDiff", "CellSeriesNum", "CellNtcNum", "HwVer", "BmsHeartbeatVer", "EcloudOcv", "BmsSn", "ProductType", "ProductDetail", "ActSoc", "DiffSoc", "TargetSoc", "SysLoaderVer", "SysState", "ChgDsgState", "AllErrCode", "AllBmsFault", "AccuChgCap", "AccuDsgCap", "RealSoh", "CalendarSoh", "CycleSoh", "MosNtcNum", "EnvNtcNum", "HeatfilmNtcNum", "CurSensorNtcNum", "MaxEnvTemp", "MinEnvTemp", "MaxHeatfilmTemp", "MinHeatfilmTemp", "MaxCurSensorTemp", "MinCurSensorTemp", "BalanceCmd", "AfeSysStatus", "McuPinInStatus", "McuPinOutStatus", "BmsAlarmState1", "BmsAlarmState2", "BmsProtectState1", "BmsProtectState2", "BmsFaultState", "AccuChgEnergy", "AccuDsgEnergy", "PackSn", "WaterInFlag" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Omniroute.Protocol.Proto.Delta3HeaderMessage), global::Omniroute.Protocol.Proto.Delta3HeaderMessage.Parser, new[]{ "Header" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3Header), global::PowerHub.Protocol.Proto.Delta3Header.Parser, new[]{ "Pdata", "Src", "Dest", "DSrc", "DDest", "EncType", "CheckType", "CmdFunc", "CmdId", "DataLen", "NeedAck", "IsAck", "Seq", "ProductId", "Version", "PayloadVer", "TimeSnap", "IsRwCmd", "IsQueue", "AckType", "Code", "From", "ModuleSn", "DeviceSn" }, new[]{ "Pdata", "Src", "Dest", "DSrc", "DDest", "EncType", "CheckType", "CmdFunc", "CmdId", "DataLen", "NeedAck", "IsAck", "Seq", "ProductId", "Version", "PayloadVer", "TimeSnap", "IsRwCmd", "IsQueue", "AckType", "Code", "From", "ModuleSn", "DeviceSn" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3SendHeaderMsg), global::PowerHub.Protocol.Proto.Delta3SendHeaderMsg.Parser, new[]{ "Msg" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3DisplayPropertyUpload), global::PowerHub.Protocol.Proto.Delta3DisplayPropertyUpload.Parser, new[]{ "Errcode", "PowInSumW", "PowOutSumW", "EnergyBackupEn", "EnergyBackupStartSoc", "PowGetQcusb1", "PowGetQcusb2", "PowGetTypec1", "PowGetTypec2", "FlowInfoQcusb1", "FlowInfoQcusb2", "FlowInfoTypec1", "FlowInfoTypec2", "DevStandbyTime", "ScreenOffTime", "AcStandbyTime", "DcStandbyTime", "AcAlwaysOnFlag", "AcAlwaysOnMiniSoc", "XboostEn", "PcsFanLevel", "FlowInfo12V", "PowGet12V", "FlowInfoAc2Dc", "FlowInfoDc2Ac", "FlowInfoAcIn", "PowGetAc", "PowGetAcIn", "PlugInInfoAcInFlag", "PlugInInfoAcInFeq", "DcOutOpen", "CfgAcOutOpen", "PowGetDcp2", "FlowInfoDcp2In", "FlowInfoDcp2Out", "PlugInInfoDcp2InFlag", "PlugInInfoDcp2DsgChgType", "PlugInInfoDcp2ChargerFlag", "PlugInInfoDcp2Type", "PlugInInfoDcp2Detail", "PlugInInfoDcp2Sn", "PlugInInfoDcp2RunState", "PlugInInfoDcp2FirmVer", "BmsErrCode", "BanBypassEn", "OutputPowerOffMemory", "PvChgType", "FlowInfoBmsDsg", "FlowInfoBmsChg", "PowGetBms", "EnBeep", "PlugInInfoAcChargerFlag", "PlugInInfoAcInChgPowMax", "AcOutFreq", "DevSleepState", "PdErrCode", "MpptErrCode", "LlcHvLvFlag", "LlcInvErrCode", "PlugInInfoAcOutDsgPowMax", "BmsBattSoc", "BmsBattSoh", "BmsDesignCap", "BmsDsgRemTime", "BmsChgRemTime", "BmsMinCellTemp", "BmsMaxCellTemp", "BmsMinMosTemp", "BmsMaxMosTemp", "CmsBattSoc", "CmsBattSoh", "CmsDsgRemTime", "CmsChgRemTime", "CmsMaxChgSoc", "CmsMinDsgSoc", "CmsBmsRunState", "BmsChgDsgState", "CmsChgDsgState", "TimeTaskConflictFlag", "TimeTaskChangeCnt", "UpsAlram", "PlugInInfoPvDcAmpMax", "LedMode", "LowPowerAlarm", "SilenceChgWatt", "FlowInfoPv", "PowGetPv", "PlugInInfoPvFlag", "PlugInInfoPvType", "PlugInInfoPvChargerFlag", "PlugInInfoPvChgAmpMax", "PlugInInfoPvChgVolMax", "FlowInfoAcOut", "PowGetAcOut", "EnergyStrategyOperateMode", "SelfPoweredConflictFlag", "TouModeConflictFlag", "FlowInfoDcpIn", "FlowInfoDcpOut", "PowGetDcp", "PlugInInfoDcpInFlag", "PlugInInfoDcpType", "PlugInInfoDcpDetail", "PlugInInfoDcpDsgChgType", "PlugInInfoDcpSn", "PlugInInfoDcpFirmVer", "PlugInInfoDcpChargerFlag", "PlugInInfoDcpRunState", "PlugInInfoDcpErrCode", "PlugInInfoDcp2ErrCode", "PlugInInfoAcInChgMode", "PlugInInfoAcInChgHalPowMax", "BackupReverseSoc" }, new[]{ "Errcode", "PowInSumW", "PowOutSumW", "EnergyBackupEn", "EnergyBackupStartSoc", "PowGetQcusb1", "PowGetQcusb2", "PowGetTypec1", "PowGetTypec2", "FlowInfoQcusb1", "FlowInfoQcusb2", "FlowInfoTypec1", "FlowInfoTypec2", "DevStandbyTime", "ScreenOffTime", "AcStandbyTime", "DcStandbyTime", "AcAlwaysOnFlag", "AcAlwaysOnMiniSoc", "XboostEn", "PcsFanLevel", "FlowInfo12V", "PowGet12V", "FlowInfoAc2Dc", "FlowInfoDc2Ac", "FlowInfoAcIn", "PowGetAc", "PowGetAcIn", "PlugInInfoAcInFlag", "PlugInInfoAcInFeq", "DcOutOpen", "CfgAcOutOpen", "PowGetDcp2", "FlowInfoDcp2In", "FlowInfoDcp2Out", "PlugInInfoDcp2InFlag", "PlugInInfoDcp2DsgChgType", "PlugInInfoDcp2ChargerFlag", "PlugInInfoDcp2Type", "PlugInInfoDcp2Detail", "PlugInInfoDcp2Sn", "PlugInInfoDcp2RunState", "PlugInInfoDcp2FirmVer", "BmsErrCode", "BanBypassEn", "OutputPowerOffMemory", "PvChgType", "FlowInfoBmsDsg", "FlowInfoBmsChg", "PowGetBms", "EnBeep", "PlugInInfoAcChargerFlag", "PlugInInfoAcInChgPowMax", "AcOutFreq", "DevSleepState", "PdErrCode", "MpptErrCode", "LlcHvLvFlag", "LlcInvErrCode", "PlugInInfoAcOutDsgPowMax", "BmsBattSoc", "BmsBattSoh", "BmsDesignCap", "BmsDsgRemTime", "BmsChgRemTime", "BmsMinCellTemp", "BmsMaxCellTemp", "BmsMinMosTemp", "BmsMaxMosTemp", "CmsBattSoc", "CmsBattSoh", "CmsDsgRemTime", "CmsChgRemTime", "CmsMaxChgSoc", "CmsMinDsgSoc", "CmsBmsRunState", "BmsChgDsgState", "CmsChgDsgState", "TimeTaskConflictFlag", "TimeTaskChangeCnt", "UpsAlram", "PlugInInfoPvDcAmpMax", "LedMode", "LowPowerAlarm", "SilenceChgWatt", "FlowInfoPv", "PowGetPv", "PlugInInfoPvFlag", "PlugInInfoPvType", "PlugInInfoPvChargerFlag", "PlugInInfoPvChgAmpMax", "PlugInInfoPvChgVolMax", "FlowInfoAcOut", "PowGetAcOut", "EnergyStrategyOperateMode", "SelfPoweredConflictFlag", "TouModeConflictFlag", "FlowInfoDcpIn", "FlowInfoDcpOut", "PowGetDcp", "PlugInInfoDcpInFlag", "PlugInInfoDcpType", "PlugInInfoDcpDetail", "PlugInInfoDcpDsgChgType", "PlugInInfoDcpSn", "PlugInInfoDcpFirmVer", "PlugInInfoDcpChargerFlag", "PlugInInfoDcpRunState", "PlugInInfoDcpErrCode", "PlugInInfoDcp2ErrCode", "PlugInInfoAcInChgMode", "PlugInInfoAcInChgHalPowMax", "BackupReverseSoc" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3RuntimePropertyUpload), global::PowerHub.Protocol.Proto.Delta3RuntimePropertyUpload.Parser, new[]{ "AcPhaseType", "PcsWorkMode", "TempPcsDc", "TempPcsAc", "PlugInInfoAcOutType", "PlugInInfoAcOutFreq", "PlugInInfoAcOutVol", "PlugInInfoAcInVol", "PlugInInfoBmsVol", "PdMpptCommErr", "PdLlcCommErr", "PdBmsCommErr", "PdIotCommErr", "PdFirmVer", "IotFirmVer", "MpptFirmVer", "PlugInInfoAcInAmp", "PlugInInfoAcOutAmp", "LlcInvFirmVer", "BmsFirmVer", "BmsBattVol", "BmsBattAmp", "BmsBalState", "BmsFullCap", "BmsRemainCap", "BmsAlmState", "BmsProState", "BmsFltState", "BmsErrCode", "BmsMinCellVol", "BmsMaxCellVol", "CmsBattVol", "CmsBattAmp", "CmsChgReqVol", "CmsChgReqAmp", "BmsOverloadIcon", "BmsWarnIcon", "BmsHighTempIcon", "BmsLowTempIcon", "BmsLimitIcon", "BmsAlmState2", "BmsProState2", "DisplayPropertyFullUploadPeriod", "DisplayPropertyIncrementalUploadPeriod", "RuntimePropertyFullUploadPeriod", "RuntimePropertyIncrementalUploadPeriod", "PvVinRef", "InvMainFsmstate", "L1MainFsmstate", "DcdcChgReqCur", "LlcRecvCmsChgReqVol", "TempPv", "PlugInInfoPvVol", "PlugInInfoPvAmp", "PlugInInfo12VVol", "PlugInInfo12VAmp", "LlcBatVol", "LlcBatCur", "LlcBusVol", "PlugInInfoDcpVol", "PlugInInfoDcpAmp" }, new[]{ "AcPhaseType", "PcsWorkMode", "TempPcsDc", "TempPcsAc", "PlugInInfoAcOutType", "PlugInInfoAcOutFreq", "PlugInInfoAcOutVol", "PlugInInfoAcInVol", "PlugInInfoBmsVol", "PdMpptCommErr", "PdLlcCommErr", "PdBmsCommErr", "PdIotCommErr", "PdFirmVer", "IotFirmVer", "MpptFirmVer", "PlugInInfoAcInAmp", "PlugInInfoAcOutAmp", "LlcInvFirmVer", "BmsFirmVer", "BmsBattVol", "BmsBattAmp", "BmsBalState", "BmsFullCap", "BmsRemainCap", "BmsAlmState", "BmsProState", "BmsFltState", "BmsErrCode", "BmsMinCellVol", "BmsMaxCellVol", "CmsBattVol", "CmsBattAmp", "CmsChgReqVol", "CmsChgReqAmp", "BmsOverloadIcon", "BmsWarnIcon", "BmsHighTempIcon", "BmsLowTempIcon", "BmsLimitIcon", "BmsAlmState2", "BmsProState2", "DisplayPropertyFullUploadPeriod", "DisplayPropertyIncrementalUploadPeriod", "RuntimePropertyFullUploadPeriod", "RuntimePropertyIncrementalUploadPeriod", "PvVinRef", "InvMainFsmstate", "L1MainFsmstate", "DcdcChgReqCur", "LlcRecvCmsChgReqVol", "TempPv", "PlugInInfoPvVol", "PlugInInfoPvAmp", "PlugInInfo12VVol", "PlugInInfo12VAmp", "LlcBatVol", "LlcBatCur", "LlcBusVol", "PlugInInfoDcpVol", "PlugInInfoDcpAmp" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3SetCommand), global::PowerHub.Protocol.Proto.Delta3SetCommand.Parser, new[]{ "CfgPowerOff", "CfgUtcTime", "CfgUtcTimezone", "EnBeep", "AcStandbyTime", "DcStandbyTime", "ScreenOffTime", "DevStandbyTime", "LcdLight", "CfgDc12VOutOpen", "CfgUsbOpen", "XboostEn", "BanBypassEn", "CmsMaxChgSoc", "CmsMinDsgSoc", "CfgEnergyBackup", "PlugInInfoAcInChgPowMax", "CfgAcOutOpen", "PlugInInfoPvDcAmpMax", "CfgLedMode", "PvChgType", "BackupReverseSoc", "EnergyStrategyOperateMode", "PlugInInfoAcInChgMode", "OutputPowerOffMemory" }, new[]{ "CfgPowerOff", "CfgUtcTime", "CfgUtcTimezone", "EnBeep", "AcStandbyTime", "DcStandbyTime", "ScreenOffTime", "DevStandbyTime", "LcdLight", "CfgDc12VOutOpen", "CfgUsbOpen", "XboostEn", "BanBypassEn", "CmsMaxChgSoc", "CmsMinDsgSoc", "CfgEnergyBackup", "PlugInInfoAcInChgPowMax", "CfgAcOutOpen", "PlugInInfoPvDcAmpMax", "CfgLedMode", "PvChgType", "BackupReverseSoc", "EnergyStrategyOperateMode", "PlugInInfoAcInChgMode", "OutputPowerOffMemory" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3SetReply), global::PowerHub.Protocol.Proto.Delta3SetReply.Parser, new[]{ "ActionId", "ConfigOk", "CfgUtcTime", "CfgUtcTimezone", "EnBeep", "AcStandbyTime", "DcStandbyTime", "ScreenOffTime", "DevStandbyTime", "LcdLight", "CfgDc12VOutOpen", "CfgUsbOpen", "XboostEn", "BanBypassEn", "CmsMaxChgSoc", "CmsMinDsgSoc", "CfgEnergyBackup", "PlugInInfoAcInChgPowMax", "DcOutOpen", "CfgAcOutOpen", "PlugInInfoPvDcAmpMax", "CfgLedMode", "PvChgType", "BackupReverseSoc", "EnergyStrategyOperateMode", "PlugInInfoAcInChgMode", "OutputPowerOffMemory" }, new[]{ "ActionId", "ConfigOk", "CfgUtcTime", "CfgUtcTimezone", "EnBeep", "AcStandbyTime", "DcStandbyTime", "ScreenOffTime", "DevStandbyTime", "LcdLight", "CfgDc12VOutOpen", "CfgUsbOpen", "XboostEn", "BanBypassEn", "CmsMaxChgSoc", "CmsMinDsgSoc", "CfgEnergyBackup", "PlugInInfoAcInChgPowMax", "DcOutOpen", "CfgAcOutOpen", "PlugInInfoPvDcAmpMax", "CfgLedMode", "PvChgType", "BackupReverseSoc", "EnergyStrategyOperateMode", "PlugInInfoAcInChgMode", "OutputPowerOffMemory" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup), global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup.Parser, new[]{ "EnergyBackupEn", "EnergyBackupStartSoc" }, new[]{ "EnergyBackupEn", "EnergyBackupStartSoc" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode), global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode.Parser, new[]{ "OperateSelfPoweredOpen", "OperateScheduledOpen", "OperateTouModeOpen" }, new[]{ "OperateSelfPoweredOpen", "OperateScheduledOpen", "OperateTouModeOpen" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3CMSHeartBeatReport), global::PowerHub.Protocol.Proto.Delta3CMSHeartBeatReport.Parser, new[]{ "Msg3221", "Msg3222" }, new[]{ "Msg3221", "Msg3222" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3CMSStatus1), global::PowerHub.Protocol.Proto.Delta3CMSStatus1.Parser, new[]{ "CmsStatusMisc1", "CmsStatusMisc2", "CmsStatusMisc3", "CmsBattVolMv", "CmsChgReqAmp", "CmsStatusMisc4", "CmsMaxChgSoc", "CmsMinDsgSoc", "AcOutFreq", "CmsStatusMisc5", "CmsStatusMisc6", "CmsChgRemTime", "CmsDsgRemTime", "CmsChgDsgState", "CmsBattSoc", "BmsIsConnState", "CmsStatusMisc7", "CmsStatusMisc8", "CmsStatusMisc9", "CmsStatusMisc10", "CmsStatusMisc11", "CmsStatusMisc12", "CmsOilOffSoc" }, new[]{ "CmsStatusMisc1", "CmsStatusMisc2", "CmsStatusMisc3", "CmsBattVolMv", "CmsChgReqAmp", "CmsStatusMisc4", "CmsMaxChgSoc", "CmsMinDsgSoc", "AcOutFreq", "CmsStatusMisc5", "CmsStatusMisc6", "CmsChgRemTime", "CmsDsgRemTime", "CmsChgDsgState", "CmsBattSoc", "CmsStatusMisc7", "CmsStatusMisc8", "CmsStatusMisc9", "CmsStatusMisc10", "CmsStatusMisc11", "CmsStatusMisc12", "CmsOilOffSoc" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3CMSStatus2), global::PowerHub.Protocol.Proto.Delta3CMSStatus2.Parser, new[]{ "CmsStatusMisc13", "CmsStatusMisc14", "CmsStatusMisc15", "CmsStatusMisc16", "CmsStatusMisc17" }, new[]{ "CmsStatusMisc13", "CmsStatusMisc14", "CmsStatusMisc15", "CmsStatusMisc16", "CmsStatusMisc17" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3BMSHeartBeatReport), global::PowerHub.Protocol.Proto.Delta3BMSHeartBeatReport.Parser, new[]{ "Num", "Type", "CellId", "ErrCode", "SysVer", "Soc", "Vol", "Amp", "Temp", "OpenBmsFlag", "DesignCap", "RemainCap", "FullCap", "Cycles", "Soh", "MaxCellVol", "MinCellVol", "MaxCellTemp", "MinCellTemp", "MaxMosTemp", "MinMosTemp", "BmsFault", "BqSysStatReg", "TagChgAmp", "F32ShowSoc", "InputWatts", "OutputWatts", "RemainTime", "MosState", "BalanceState", "MaxVolDiff", "CellSeriesNum", "CellVol", "CellNtcNum", "CellTemp", "HwVer", "BmsHeartbeatVer", "EcloudOcv", "BmsSn", "ProductType", "ProductDetail", "ActSoc", "DiffSoc", "TargetSoc", "SysLoaderVer", "SysState", "ChgDsgState", "AllErrCode", "AllBmsFault", "AccuChgCap", "AccuDsgCap", "RealSoh", "CalendarSoh", "CycleSoh", "MosNtcNum", "MosTemp", "EnvNtcNum", "EnvTemp", "HeatfilmNtcNum", "HeatfilmTemp", "CurSensorNtcNum", "CurSensorTemp", "MaxEnvTemp", "MinEnvTemp", "MaxHeatfilmTemp", "MinHeatfilmTemp", "MaxCurSensorTemp", "MinCurSensorTemp", "BalanceCmd", "RemainBalanceTime", "AfeSysStatus", "McuPinInStatus", "McuPinOutStatus", "BmsAlarmState1", "BmsAlarmState2", "BmsProtectState1", "BmsProtectState2", "BmsFaultState", "AccuChgEnergy", "AccuDsgEnergy", "PackSn", "WaterInFlag" }, new[]{ "Num", "Type", "CellId", "ErrCode", "SysVer", "Soc", "Vol", "Amp", "Temp", "OpenBmsFlag", "DesignCap", "RemainCap", "FullCap", "Cycles", "Soh", "MaxCellVol", "MinCellVol", "MaxCellTemp", "MinCellTemp", "MaxMosTemp", "MinMosTemp", "BmsFault", "BqSysStatReg", "TagChgAmp", "F32ShowSoc", "InputWatts", "OutputWatts", "RemainTime", "MosState", "BalanceState", "MaxVolDiff", "CellSeriesNum", "CellNtcNum", "HwVer", "BmsHeartbeatVer", "EcloudOcv", "BmsSn", "ProductType", "ProductDetail", "ActSoc", "DiffSoc", "TargetSoc", "SysLoaderVer", "SysState", "ChgDsgState", "AllErrCode", "AllBmsFault", "AccuChgCap", "AccuDsgCap", "RealSoh", "CalendarSoh", "CycleSoh", "MosNtcNum", "EnvNtcNum", "HeatfilmNtcNum", "CurSensorNtcNum", "MaxEnvTemp", "MinEnvTemp", "MaxHeatfilmTemp", "MinHeatfilmTemp", "MaxCurSensorTemp", "MinCurSensorTemp", "BalanceCmd", "AfeSysStatus", "McuPinInStatus", "McuPinOutStatus", "BmsAlarmState1", "BmsAlarmState2", "BmsProtectState1", "BmsProtectState2", "BmsFaultState", "AccuChgEnergy", "AccuDsgEnergy", "PackSn", "WaterInFlag" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::PowerHub.Protocol.Proto.Delta3HeaderMessage), global::PowerHub.Protocol.Proto.Delta3HeaderMessage.Parser, new[]{ "Header" }, null, null, null, null)
           }));
     }
     #endregion
@@ -486,7 +486,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[0]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1891,7 +1891,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[1]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1923,12 +1923,12 @@ namespace Omniroute.Protocol.Proto {
 
     /// <summary>Field number for the "msg" field.</summary>
     public const int MsgFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::Omniroute.Protocol.Proto.Delta3Header> _repeated_msg_codec
-        = pb::FieldCodec.ForMessage(10, global::Omniroute.Protocol.Proto.Delta3Header.Parser);
-    private readonly pbc::RepeatedField<global::Omniroute.Protocol.Proto.Delta3Header> msg_ = new pbc::RepeatedField<global::Omniroute.Protocol.Proto.Delta3Header>();
+    private static readonly pb::FieldCodec<global::PowerHub.Protocol.Proto.Delta3Header> _repeated_msg_codec
+        = pb::FieldCodec.ForMessage(10, global::PowerHub.Protocol.Proto.Delta3Header.Parser);
+    private readonly pbc::RepeatedField<global::PowerHub.Protocol.Proto.Delta3Header> msg_ = new pbc::RepeatedField<global::PowerHub.Protocol.Proto.Delta3Header>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<global::Omniroute.Protocol.Proto.Delta3Header> Msg {
+    public pbc::RepeatedField<global::PowerHub.Protocol.Proto.Delta3Header> Msg {
       get { return msg_; }
     }
 
@@ -2085,7 +2085,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[2]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5052,13 +5052,13 @@ namespace Omniroute.Protocol.Proto {
 
     /// <summary>Field number for the "energy_strategy_operate_mode" field.</summary>
     public const int EnergyStrategyOperateModeFieldNumber = 393;
-    private global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode energyStrategyOperateMode_;
+    private global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode energyStrategyOperateMode_;
     /// <summary>
     /// Active energy strategy
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode EnergyStrategyOperateMode {
+    public global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode EnergyStrategyOperateMode {
       get { return energyStrategyOperateMode_; }
       set {
         energyStrategyOperateMode_ = value;
@@ -7429,7 +7429,7 @@ namespace Omniroute.Protocol.Proto {
       }
       if (other.energyStrategyOperateMode_ != null) {
         if (energyStrategyOperateMode_ == null) {
-          EnergyStrategyOperateMode = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
+          EnergyStrategyOperateMode = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
         }
         EnergyStrategyOperateMode.MergeFrom(other.EnergyStrategyOperateMode);
       }
@@ -7888,7 +7888,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 3146: {
             if (energyStrategyOperateMode_ == null) {
-              EnergyStrategyOperateMode = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
+              EnergyStrategyOperateMode = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
             }
             input.ReadMessage(EnergyStrategyOperateMode);
             break;
@@ -8362,7 +8362,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 3146: {
             if (energyStrategyOperateMode_ == null) {
-              EnergyStrategyOperateMode = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
+              EnergyStrategyOperateMode = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
             }
             input.ReadMessage(EnergyStrategyOperateMode);
             break;
@@ -8462,7 +8462,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[3]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11972,7 +11972,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[4]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12479,13 +12479,13 @@ namespace Omniroute.Protocol.Proto {
 
     /// <summary>Field number for the "cfg_energy_backup" field.</summary>
     public const int CfgEnergyBackupFieldNumber = 43;
-    private global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup cfgEnergyBackup_;
+    private global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup cfgEnergyBackup_;
     /// <summary>
     /// Energy backup config
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup CfgEnergyBackup {
+    public global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup CfgEnergyBackup {
       get { return cfgEnergyBackup_; }
       set {
         cfgEnergyBackup_ = value;
@@ -12674,13 +12674,13 @@ namespace Omniroute.Protocol.Proto {
 
     /// <summary>Field number for the "energy_strategy_operate_mode" field.</summary>
     public const int EnergyStrategyOperateModeFieldNumber = 106;
-    private global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode energyStrategyOperateMode_;
+    private global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode energyStrategyOperateMode_;
     /// <summary>
     /// Energy strategy selection
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode EnergyStrategyOperateMode {
+    public global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode EnergyStrategyOperateMode {
       get { return energyStrategyOperateMode_; }
       set {
         energyStrategyOperateMode_ = value;
@@ -13191,7 +13191,7 @@ namespace Omniroute.Protocol.Proto {
       }
       if (other.cfgEnergyBackup_ != null) {
         if (cfgEnergyBackup_ == null) {
-          CfgEnergyBackup = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup();
+          CfgEnergyBackup = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup();
         }
         CfgEnergyBackup.MergeFrom(other.CfgEnergyBackup);
       }
@@ -13215,7 +13215,7 @@ namespace Omniroute.Protocol.Proto {
       }
       if (other.energyStrategyOperateMode_ != null) {
         if (energyStrategyOperateMode_ == null) {
-          EnergyStrategyOperateMode = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
+          EnergyStrategyOperateMode = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
         }
         EnergyStrategyOperateMode.MergeFrom(other.EnergyStrategyOperateMode);
       }
@@ -13306,7 +13306,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 346: {
             if (cfgEnergyBackup_ == null) {
-              CfgEnergyBackup = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup();
+              CfgEnergyBackup = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup();
             }
             input.ReadMessage(CfgEnergyBackup);
             break;
@@ -13337,7 +13337,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 850: {
             if (energyStrategyOperateMode_ == null) {
-              EnergyStrategyOperateMode = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
+              EnergyStrategyOperateMode = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
             }
             input.ReadMessage(EnergyStrategyOperateMode);
             break;
@@ -13431,7 +13431,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 346: {
             if (cfgEnergyBackup_ == null) {
-              CfgEnergyBackup = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup();
+              CfgEnergyBackup = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup();
             }
             input.ReadMessage(CfgEnergyBackup);
             break;
@@ -13462,7 +13462,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 850: {
             if (energyStrategyOperateMode_ == null) {
-              EnergyStrategyOperateMode = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
+              EnergyStrategyOperateMode = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
             }
             input.ReadMessage(EnergyStrategyOperateMode);
             break;
@@ -13501,7 +13501,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[5]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14040,13 +14040,13 @@ namespace Omniroute.Protocol.Proto {
 
     /// <summary>Field number for the "cfg_energy_backup" field.</summary>
     public const int CfgEnergyBackupFieldNumber = 43;
-    private global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup cfgEnergyBackup_;
+    private global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup cfgEnergyBackup_;
     /// <summary>
     /// Energy backup config
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup CfgEnergyBackup {
+    public global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup CfgEnergyBackup {
       get { return cfgEnergyBackup_; }
       set {
         cfgEnergyBackup_ = value;
@@ -14265,13 +14265,13 @@ namespace Omniroute.Protocol.Proto {
 
     /// <summary>Field number for the "energy_strategy_operate_mode" field.</summary>
     public const int EnergyStrategyOperateModeFieldNumber = 106;
-    private global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode energyStrategyOperateMode_;
+    private global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode energyStrategyOperateMode_;
     /// <summary>
     /// Energy strategy selection
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode EnergyStrategyOperateMode {
+    public global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode EnergyStrategyOperateMode {
       get { return energyStrategyOperateMode_; }
       set {
         energyStrategyOperateMode_ = value;
@@ -14811,7 +14811,7 @@ namespace Omniroute.Protocol.Proto {
       }
       if (other.cfgEnergyBackup_ != null) {
         if (cfgEnergyBackup_ == null) {
-          CfgEnergyBackup = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup();
+          CfgEnergyBackup = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup();
         }
         CfgEnergyBackup.MergeFrom(other.CfgEnergyBackup);
       }
@@ -14838,7 +14838,7 @@ namespace Omniroute.Protocol.Proto {
       }
       if (other.energyStrategyOperateMode_ != null) {
         if (energyStrategyOperateMode_ == null) {
-          EnergyStrategyOperateMode = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
+          EnergyStrategyOperateMode = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
         }
         EnergyStrategyOperateMode.MergeFrom(other.EnergyStrategyOperateMode);
       }
@@ -14933,7 +14933,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 346: {
             if (cfgEnergyBackup_ == null) {
-              CfgEnergyBackup = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup();
+              CfgEnergyBackup = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup();
             }
             input.ReadMessage(CfgEnergyBackup);
             break;
@@ -14968,7 +14968,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 850: {
             if (energyStrategyOperateMode_ == null) {
-              EnergyStrategyOperateMode = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
+              EnergyStrategyOperateMode = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
             }
             input.ReadMessage(EnergyStrategyOperateMode);
             break;
@@ -15066,7 +15066,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 346: {
             if (cfgEnergyBackup_ == null) {
-              CfgEnergyBackup = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyBackup();
+              CfgEnergyBackup = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyBackup();
             }
             input.ReadMessage(CfgEnergyBackup);
             break;
@@ -15101,7 +15101,7 @@ namespace Omniroute.Protocol.Proto {
           }
           case 850: {
             if (energyStrategyOperateMode_ == null) {
-              EnergyStrategyOperateMode = new global::Omniroute.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
+              EnergyStrategyOperateMode = new global::PowerHub.Protocol.Proto.Delta3CfgEnergyStrategyOperateMode();
             }
             input.ReadMessage(EnergyStrategyOperateMode);
             break;
@@ -15140,7 +15140,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[6]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15418,7 +15418,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[7]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15748,7 +15748,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[8]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15781,10 +15781,10 @@ namespace Omniroute.Protocol.Proto {
 
     /// <summary>Field number for the "msg32_2_1" field.</summary>
     public const int Msg3221FieldNumber = 1;
-    private global::Omniroute.Protocol.Proto.Delta3CMSStatus1 msg3221_;
+    private global::PowerHub.Protocol.Proto.Delta3CMSStatus1 msg3221_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Omniroute.Protocol.Proto.Delta3CMSStatus1 Msg3221 {
+    public global::PowerHub.Protocol.Proto.Delta3CMSStatus1 Msg3221 {
       get { return msg3221_; }
       set {
         msg3221_ = value;
@@ -15793,10 +15793,10 @@ namespace Omniroute.Protocol.Proto {
 
     /// <summary>Field number for the "msg32_2_2" field.</summary>
     public const int Msg3222FieldNumber = 2;
-    private global::Omniroute.Protocol.Proto.Delta3CMSStatus2 msg3222_;
+    private global::PowerHub.Protocol.Proto.Delta3CMSStatus2 msg3222_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Omniroute.Protocol.Proto.Delta3CMSStatus2 Msg3222 {
+    public global::PowerHub.Protocol.Proto.Delta3CMSStatus2 Msg3222 {
       get { return msg3222_; }
       set {
         msg3222_ = value;
@@ -15903,13 +15903,13 @@ namespace Omniroute.Protocol.Proto {
       }
       if (other.msg3221_ != null) {
         if (msg3221_ == null) {
-          Msg3221 = new global::Omniroute.Protocol.Proto.Delta3CMSStatus1();
+          Msg3221 = new global::PowerHub.Protocol.Proto.Delta3CMSStatus1();
         }
         Msg3221.MergeFrom(other.Msg3221);
       }
       if (other.msg3222_ != null) {
         if (msg3222_ == null) {
-          Msg3222 = new global::Omniroute.Protocol.Proto.Delta3CMSStatus2();
+          Msg3222 = new global::PowerHub.Protocol.Proto.Delta3CMSStatus2();
         }
         Msg3222.MergeFrom(other.Msg3222);
       }
@@ -15934,14 +15934,14 @@ namespace Omniroute.Protocol.Proto {
             break;
           case 10: {
             if (msg3221_ == null) {
-              Msg3221 = new global::Omniroute.Protocol.Proto.Delta3CMSStatus1();
+              Msg3221 = new global::PowerHub.Protocol.Proto.Delta3CMSStatus1();
             }
             input.ReadMessage(Msg3221);
             break;
           }
           case 18: {
             if (msg3222_ == null) {
-              Msg3222 = new global::Omniroute.Protocol.Proto.Delta3CMSStatus2();
+              Msg3222 = new global::PowerHub.Protocol.Proto.Delta3CMSStatus2();
             }
             input.ReadMessage(Msg3222);
             break;
@@ -15967,14 +15967,14 @@ namespace Omniroute.Protocol.Proto {
             break;
           case 10: {
             if (msg3221_ == null) {
-              Msg3221 = new global::Omniroute.Protocol.Proto.Delta3CMSStatus1();
+              Msg3221 = new global::PowerHub.Protocol.Proto.Delta3CMSStatus1();
             }
             input.ReadMessage(Msg3221);
             break;
           }
           case 18: {
             if (msg3222_ == null) {
-              Msg3222 = new global::Omniroute.Protocol.Proto.Delta3CMSStatus2();
+              Msg3222 = new global::PowerHub.Protocol.Proto.Delta3CMSStatus2();
             }
             input.ReadMessage(Msg3222);
             break;
@@ -16002,7 +16002,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[9]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17370,7 +17370,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[10]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -17798,7 +17798,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[11]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22304,7 +22304,7 @@ namespace Omniroute.Protocol.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Omniroute.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[12]; }
+      get { return global::PowerHub.Protocol.Proto.EfDelta3Reflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22336,12 +22336,12 @@ namespace Omniroute.Protocol.Proto {
 
     /// <summary>Field number for the "header" field.</summary>
     public const int HeaderFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::Omniroute.Protocol.Proto.Delta3Header> _repeated_header_codec
-        = pb::FieldCodec.ForMessage(10, global::Omniroute.Protocol.Proto.Delta3Header.Parser);
-    private readonly pbc::RepeatedField<global::Omniroute.Protocol.Proto.Delta3Header> header_ = new pbc::RepeatedField<global::Omniroute.Protocol.Proto.Delta3Header>();
+    private static readonly pb::FieldCodec<global::PowerHub.Protocol.Proto.Delta3Header> _repeated_header_codec
+        = pb::FieldCodec.ForMessage(10, global::PowerHub.Protocol.Proto.Delta3Header.Parser);
+    private readonly pbc::RepeatedField<global::PowerHub.Protocol.Proto.Delta3Header> header_ = new pbc::RepeatedField<global::PowerHub.Protocol.Proto.Delta3Header>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<global::Omniroute.Protocol.Proto.Delta3Header> Header {
+    public pbc::RepeatedField<global::PowerHub.Protocol.Proto.Delta3Header> Header {
       get { return header_; }
     }
 

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Google.Protobuf;
-using Omniroute.Protocol.Proto;
+using PowerHub.Protocol.Proto;
 
-namespace Omniroute.Protocol;
+namespace PowerHub.Protocol;
 
 /// <summary>
 /// Delta 3 / Delta 3 Max: protobuf через MQTT API застосунку.

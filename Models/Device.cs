@@ -1,9 +1,9 @@
 using System;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Omniroute.Protocol;
+using PowerHub.Protocol;
 
-namespace Omniroute.Models;
+namespace PowerHub.Models;
 
 /// <summary>
 /// Модель зарядної станції EcoFlow.

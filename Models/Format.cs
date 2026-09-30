@@ -1,8 +1,8 @@
 using System;
 using System.Globalization;
-using Omniroute.Protocol;
+using PowerHub.Protocol;
 
-namespace Omniroute.Models;
+namespace PowerHub.Models;
 
 /// <summary>
 /// Форматування значень для інтерфейсу, трею і сповіщень (як watts/minutes/flowText в Android-версії)

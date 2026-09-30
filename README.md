@@ -1,4 +1,4 @@
-# Omniroute — Windows-клієнт для моніторингу зарядних станцій EcoFlow
+# PowerHub для Windows — моніторинг і керування зарядними станціями EcoFlow
 
 Моніторинг і керування зарядними станціями EcoFlow на Windows 11: заряд, мережа, сповіщення про відключення світла, графіки.
 
@@ -36,8 +36,8 @@
 
 ## Встановлення
 
-1. Завантажте `Omniroute-<версія>-win-x64.zip` з [Releases](../../releases/latest)
-2. Розпакуйте архів у будь-яку папку й запустіть `Omniroute.exe` (встановлювати нічого не треба, потрібен лише [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0))
+1. Завантажте `PowerHub-<версія>-win-x64.zip` з [Releases](../../releases/latest)
+2. Розпакуйте архів у будь-яку папку й запустіть `PowerHub.exe` (встановлювати нічого не треба, потрібен лише [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0))
 3. Увійдіть з email і паролем EcoFlow
 4. Щоб станції підтягнулися автоматично, введіть у налаштуваннях ключі з developer.ecoflow.com (або додайте станцію вручну за серійним номером)
 
@@ -51,22 +51,22 @@
 
 ### Кроки збирання
 ```bash
-git clone https://github.com/t1me2drum/Omniroute.git
-cd Omniroute
+git clone https://github.com/t1me2drum/PowerHub.git
+cd PowerHub
 dotnet build -c Release -p:Platform=x64
 ```
-Готовий застосунок: `bin/x64/Release/net8.0-windows10.0.22621.0/win-x64/Omniroute.exe`. Windows App SDK вбудований, тож копіювати треба всю папку `win-x64`. Потрібен .NET 8 Desktop Runtime.
+Готовий застосунок: `bin/x64/Release/net8.0-windows10.0.22621.0/win-x64/PowerHub.exe`. Windows App SDK вбудований, тож копіювати треба всю папку `win-x64`. Потрібен .NET 8 Desktop Runtime.
 
 ### Тести
 ```bash
-dotnet test tests/Omniroute.Tests
+dotnet test tests/PowerHub.Tests
 ```
 Тести протоколів, стану батареї й мережі та форматування (перенесені з Android-версії) запускаються на будь-якій ОС. `tools/check-build/check.sh` компілює весь C#-код без Windows (див. коментар у скрипті).
 
 ## Структура проекту
 
 ```
-Omniroute/
+PowerHub/
   ├── Api/              EcoFlow API клієнти (REST і MQTT)
   ├── Protocol/         Протоколи пристроїв (Delta2, Delta3, DeltaPro3)
   ├── Data/             Repository, Settings, History database
@@ -88,4 +88,4 @@ Omniroute/
 
 ## Ліцензія
 
-Цей проект є портом [PowerHub Android застосунку](https://github.com/t1me2drum/Ecoflow-mon-android)
+Windows-версія [Android-застосунку PowerHub](https://github.com/t1me2drum/Ecoflow-mon-android). До версії 0.4.0 проєкт звався Omniroute; налаштування й історія зі старої версії переносяться автоматично.

@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Omniroute.Models;
-using Omniroute.Services;
+using PowerHub.Models;
+using PowerHub.Services;
 
-namespace Omniroute.Views;
+namespace PowerHub.Views;
 
 public sealed partial class DevicesPage : Page
 {
