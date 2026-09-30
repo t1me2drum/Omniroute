@@ -1,10 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Omniroute.Api;
 using Omniroute.Models;
 using Omniroute.Services;
 
@@ -13,6 +12,8 @@ namespace Omniroute.Views;
 public sealed partial class DevicesPage : Page
 {
     public ObservableCollection<Device> Devices { get; } = new();
+
+    private bool _syncing;
 
     public DevicesPage()
     {
@@ -40,7 +41,21 @@ public sealed partial class DevicesPage : Page
     /// </summary>
     private void OnDevicesChanged() => DispatcherQueue.TryEnqueue(LoadDevices);
 
-    private void OnStatusChanged(string status) => StatusText.Text = status;
+    private void OnStatusChanged(string status)
+    {
+        StatusText.Text = status;
+
+        // Банер лише коли з'єднання немає (як ConnectionBanner в Android-версії)
+        var state = MonitorService.State;
+        ConnectionBar.IsOpen = state is ConnectionState.Connecting or ConnectionState.Reconnecting or ConnectionState.Failed;
+        ConnectionBar.Severity = state == ConnectionState.Failed ? InfoBarSeverity.Error : InfoBarSeverity.Informational;
+        ConnectionBar.Message = state switch
+        {
+            ConnectionState.Connecting => "Підключення до хмари…",
+            ConnectionState.Failed => $"{status}. Перевірте логін у налаштуваннях.",
+            _ => status
+        };
+    }
 
     private void LoadDevices()
     {
@@ -50,67 +65,78 @@ public sealed partial class DevicesPage : Page
             Devices.Add(device);
         }
 
-        UpdateEmptyState();
+        var empty = Devices.Count == 0;
+        EmptyPanel.Visibility = Ui.VisibleIf(empty);
+        DevicesList.Visibility = Ui.VisibleIf(!empty);
+        SyncButton.Visibility = Ui.VisibleIf(App.Repository.Credentials?.HasDeveloperKeys == true);
     }
 
-    private void ShowLoading(bool isLoading)
+    private void DevicesList_ItemClick(object sender, ItemClickEventArgs e)
     {
-        LoadingPanel.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
-        if (isLoading)
-        {
-            EmptyPanel.Visibility = Visibility.Collapsed;
-            DevicesScrollViewer.Visibility = Visibility.Collapsed;
-        }
-        else
-        {
-            UpdateEmptyState();
-        }
+        if (e.ClickedItem is Device device)
+            Frame.Navigate(typeof(DeviceDetailsPage), device.SerialNumber);
     }
 
-    private void UpdateEmptyState()
+    /// <summary>
+    /// Порядок після перетягування зберігається
+    /// </summary>
+    private void DevicesList_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args) => SaveOrder();
+
+    private void SaveOrder() => App.Repository.ReorderDevices(Devices.Select(d => d.SerialNumber).ToList());
+
+    private void ApplyOrder(IEnumerable<Device> ordered)
     {
-        bool isEmpty = Devices.Count == 0;
-        EmptyPanel.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
-        DevicesScrollViewer.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+        var list = ordered.ToList();
+        Devices.Clear();
+        foreach (var device in list)
+            Devices.Add(device);
+        SaveOrder();
     }
 
-    private async void RefreshButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (App.Repository.Credentials?.HasDeveloperKeys != true)
-        {
-            LoadDevices();
-            return;
-        }
+    // Сортування стабільне: відносний порядок усередині групи зберігається
+    private void SortOnline_Click(object sender, RoutedEventArgs e) =>
+        ApplyOrder(Devices.OrderByDescending(d => d.IsOnline));
 
-        ShowLoading(true);
+    private void SortName_Click(object sender, RoutedEventArgs e) =>
+        ApplyOrder(Devices.OrderBy(d => d.Name, StringComparer.CurrentCultureIgnoreCase));
+
+    private void SortSoc_Click(object sender, RoutedEventArgs e) =>
+        ApplyOrder(Devices.OrderByDescending(d => d.BatteryLevel ?? -1));
+
+    private async void SyncButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_syncing) return;
+        _syncing = true;
+        SyncButton.IsEnabled = false;
+        SyncProgress.IsActive = true;
+        string text;
         try
         {
-            var result = await App.Repository.SyncStationsAsync();
-            LoadDevices();
-
-            if (result.Unsupported.Count > 0)
-            {
-                await ShowDialog("Непідтримувані станції", string.Join("\n", result.Unsupported));
-            }
-        }
-        catch (EcoflowException ex)
-        {
-            await ShowDialog("Не вдалося синхронізувати станції", ex.Message);
+            text = Ui.DescribeSync(await App.Repository.SyncStationsAsync());
         }
         catch (Exception ex)
         {
-            await ShowDialog("Не вдалося синхронізувати станції", ex.Message);
+            text = $"Не вдалося оновити список: {ex.Message}";
         }
         finally
         {
-            ShowLoading(false);
+            _syncing = false;
+            SyncButton.IsEnabled = true;
+            SyncProgress.IsActive = false;
         }
+        await Ui.ShowMessageAsync(XamlRoot, "Список станцій", text);
     }
 
     private async void AddButton_Click(object sender, RoutedEventArgs e)
     {
-        var snBox = new TextBox { Header = "Серійний номер", PlaceholderText = "R331ZEB4ZE8M0000" };
+        var snBox = new TextBox { Header = "Серійний номер", PlaceholderText = "R331ZEB4ZE8M0000", CharacterCasing = CharacterCasing.Upper };
         var nameBox = new TextBox { Header = "Назва (необов'язково)" };
+        var models = Enum.GetValues<DeviceModel>().Where(m => m != DeviceModel.Unknown).ToList();
+        var modelBox = new ComboBox { Header = "Модель", HorizontalAlignment = HorizontalAlignment.Stretch };
+        modelBox.Items.Add("Визначити за серійним номером");
+        foreach (var m in models)
+            modelBox.Items.Add(m.GetDisplayName());
+        modelBox.SelectedIndex = 0;
         var hint = new TextBlock
         {
             Text = "Щоб підтягнути всі станції акаунта автоматично, введіть ключі Developer API в налаштуваннях.",
@@ -120,54 +146,46 @@ public sealed partial class DevicesPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "Додати станцію",
-            Content = new StackPanel { Spacing = 12, Children = { snBox, nameBox, hint } },
+            Title = "Нова станція",
+            Content = new StackPanel { Spacing = 12, Children = { snBox, nameBox, modelBox, hint } },
             PrimaryButtonText = "Додати",
             CloseButtonText = "Скасувати",
             DefaultButton = ContentDialogButton.Primary,
+            IsPrimaryButtonEnabled = false,
             XamlRoot = XamlRoot
         };
+        snBox.TextChanged += (_, _) => dialog.IsPrimaryButtonEnabled = snBox.Text.Trim().Length >= 8;
 
         if (await dialog.ShowAsync() != ContentDialogResult.Primary)
             return;
 
-        var sn = snBox.Text.Trim();
-        if (sn.Length < 4)
-        {
-            await ShowDialog("Помилка", "Введіть коректний серійний номер");
-            return;
-        }
-
-        var device = App.Repository.AddDevice(sn, nameBox.Text);
+        DeviceModel? model = modelBox.SelectedIndex > 0 ? models[modelBox.SelectedIndex - 1] : null;
+        var device = App.Repository.AddDevice(snBox.Text, nameBox.Text, model);
         if (device.Model == DeviceModel.Unknown)
         {
-            await ShowDialog("Невідома модель",
-                "Модель станції не визначено за серійним номером. Показники можуть не відображатися.");
+            await Ui.ShowMessageAsync(XamlRoot, "Невідома модель",
+                "Модель станції не визначено за серійним номером. Видаліть станцію й додайте її знову, вибравши модель зі списку.");
         }
+    }
+
+    private async void RenameItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: string sn } || App.Repository.GetDevice(sn) is not Device device)
+            return;
+        if (await Ui.AskNameAsync(XamlRoot, device.Name) is string name)
+            App.Repository.RenameDevice(sn, name);
+    }
+
+    private async void DeleteItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: string sn } || App.Repository.GetDevice(sn) is not Device device)
+            return;
+        if (await Ui.ConfirmDeleteAsync(XamlRoot, device))
+            App.Repository.RemoveDevice(sn);
     }
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e)
     {
         Frame.Navigate(typeof(SettingsPage));
-    }
-
-    private void DeviceButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button button && button.Tag is string serialNumber)
-        {
-            Frame.Navigate(typeof(DeviceDetailsPage), serialNumber);
-        }
-    }
-
-    private async Task ShowDialog(string title, string message)
-    {
-        var dialog = new ContentDialog
-        {
-            Title = title,
-            Content = message,
-            CloseButtonText = "OK",
-            XamlRoot = XamlRoot
-        };
-        await dialog.ShowAsync();
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,7 +22,8 @@ public sealed partial class DeviceDetailsPage : Page
     /// </summary>
     private static readonly TimeSpan SliderCommitDelay = TimeSpan.FromMilliseconds(700);
 
-    private string? _serialNumber;
+    private const int TabOverview = 0, TabControls = 1, TabHistory = 2, TabRaw = 3;
+
     private Device? _device;
 
     /// <summary>
@@ -34,6 +36,8 @@ public sealed partial class DeviceDetailsPage : Page
     /// </summary>
     private bool _refreshing;
 
+    public string? SerialNumber { get; private set; }
+
     public DeviceDetailsPage()
     {
         InitializeComponent();
@@ -45,7 +49,7 @@ public sealed partial class DeviceDetailsPage : Page
 
         if (e.Parameter is string serialNumber)
         {
-            _serialNumber = serialNumber;
+            SerialNumber = serialNumber;
             LoadDevice();
         }
     }
@@ -58,15 +62,16 @@ public sealed partial class DeviceDetailsPage : Page
         {
             _device.PropertyChanged -= Device_PropertyChanged;
         }
-        MonitorService.ParamsUpdated -= RefreshControls;
+        MonitorService.ParamsUpdated -= OnParamsUpdated;
+        History.Stop();
     }
 
     private void LoadDevice()
     {
-        if (string.IsNullOrEmpty(_serialNumber))
+        if (string.IsNullOrEmpty(SerialNumber))
             return;
 
-        _device = App.Repository.GetDevice(_serialNumber);
+        _device = App.Repository.GetDevice(SerialNumber);
 
         if (_device == null)
         {
@@ -76,49 +81,146 @@ public sealed partial class DeviceDetailsPage : Page
             return;
         }
 
-        // Оновити UI
-        DeviceNameText.Text = _device.Name;
         DeviceModelText.Text = _device.Model.GetDisplayName();
+        ModelText.Text = _device.Model.GetDisplayName();
         SerialNumberText.Text = _device.SerialNumber;
 
         // Телеметрія оновлюється MonitorService в UI-потоці
         _device.PropertyChanged += Device_PropertyChanged;
-        UpdateDeviceState();
+        UpdateOverview();
 
         BuildControls(_device);
-        MonitorService.ParamsUpdated += RefreshControls;
-        RefreshControls();
+        MonitorService.ParamsUpdated += OnParamsUpdated;
+        OnParamsUpdated();
+
+        // Рідкісні поля приходять лише в повному стані — запитуємо його одразу (як LaunchedEffect в Android)
+        _ = MonitorService.RequestQuotaAsync(_device);
     }
 
-    private void Device_PropertyChanged(object? sender, PropertyChangedEventArgs e) => UpdateDeviceState();
+    private void Device_PropertyChanged(object? sender, PropertyChangedEventArgs e) => UpdateOverview();
 
-    private void UpdateDeviceState()
+    private void OnParamsUpdated()
+    {
+        RefreshControls();
+        if (Tabs.SelectedIndex == TabRaw)
+            UpdateRawData();
+    }
+
+    private void Tabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_device == null)
             return;
 
-        // Онлайн статус
-        OnlineIndicator.Visibility = _device.IsOnline ? Visibility.Visible : Visibility.Collapsed;
-        OfflineWarningText.Visibility = _device.IsOnline ? Visibility.Collapsed : Visibility.Visible;
+        if (Tabs.SelectedIndex == TabHistory)
+            History.Start(_device.SerialNumber);
+        else
+            History.Stop();
 
-        // Батарея
-        BatteryLevelText.Text = _device.BatteryText;
-        BatteryProgress.Value = _device.BatteryPercent;
+        if (Tabs.SelectedIndex == TabRaw)
+            UpdateRawData();
+    }
 
-        // Потужності
-        InputText.Text = _device.InputText;
-        OutputText.Text = _device.OutputText;
-        SolarText.Text = Device.FormatWatts(_device.SolarWatts);
+    /// <summary>
+    /// Вкладка «Огляд» (як Overview в Android-версії)
+    /// </summary>
+    private void UpdateOverview()
+    {
+        if (_device == null)
+            return;
 
-        // Інфо
-        TemperatureText.Text = _device.Temperature.HasValue ? $"{_device.Temperature}°C" : "--";
-        CyclesText.Text = _device.Cycles?.ToString() ?? "--";
+        var d = _device;
+        var s = d.State;
+        var online = d.IsOnline;
+
+        DeviceNameText.Text = d.Name;
+        OnlineIndicator.Visibility = Ui.VisibleIf(online);
+        OfflineWarningText.Visibility = Ui.VisibleIf(!online);
+
+        Ring.Soc = s.Soc;
+        Ring.IsOnline = online;
+        Ring.IsCharging = d.IsChargingFromGrid;
+
+        var weak = online && d.GridStatus == GridStatus.Weak;
+        WeakGridCard.Visibility = Ui.VisibleIf(weak);
+        if (weak)
+            WeakGridText.Text = $"⚠ Слабка мережа: {s.AcInVolt} В (поріг {d.WeakGridVolt} В). Станція не заряджається від мережі.";
+
+        FlowText.Visibility = Ui.VisibleIf(online);
+        FlowText.Text = Format.FlowText(d.Flow);
+
+        InputText.Text = Format.Watts(s.InputW);
+        OutputText.Text = Format.Watts(s.OutputW);
+        AcInText.Text = Format.Watts(s.AcInW);
+        SolarText.Text = Format.Watts(s.SolarW);
+        GridStateText.Text = Format.GridLong(d.GridStatus, s.AcInVolt);
+        AcOutText.Text = Format.Watts(s.AcOutW);
+        DcOutText.Text = Format.Watts(s.DcOutW);
+        UsbOutText.Text = Format.Watts(s.UsbOutW);
+
+        TemperatureText.Text = s.BatteryTempC.HasValue ? $"{s.BatteryTempC} °C" : "—";
+        SohText.Text = s.Soh.HasValue ? $"{s.Soh}%" : "—";
+        CyclesText.Text = s.Cycles?.ToString() ?? "—";
+    }
+
+    /// <summary>
+    /// Вкладка «Дані»: усі сирі поля від станції, щоб знайти ті, яких ще немає в інтерфейсі
+    /// </summary>
+    private void UpdateRawData()
+    {
+        if (_device == null)
+            return;
+
+        var parameters = MonitorService.GetParams(_device.SerialNumber);
+        RawHeaderText.Text = $"Сирі значення від станції ({parameters.Count}). Корисно, щоб знайти поля, яких ще немає в інтерфейсі.";
+
+        var width = parameters.Count == 0 ? 0 : parameters.Keys.Max(k => k.Length);
+        var text = new StringBuilder();
+        foreach (var (key, value) in parameters.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            var shown = value switch
+            {
+                null => "null",
+                string str => str,
+                System.Collections.IEnumerable list => "[" + string.Join(", ", list.Cast<object?>()) + "]",
+                IFormattable f => f.ToString(null, System.Globalization.CultureInfo.InvariantCulture),
+                _ => value.ToString() ?? ""
+            };
+            if (shown.Length > 40)
+                shown = shown[..40] + "…";
+            text.Append(key.PadRight(width + 2)).Append(shown).Append('\n');
+        }
+        RawDataText.Text = text.ToString();
     }
 
     private void BackButton_Click(object sender, RoutedEventArgs e)
     {
         if (Frame.CanGoBack)
             Frame.GoBack();
+    }
+
+    private async void RenameButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_device == null) return;
+        if (await Ui.AskNameAsync(XamlRoot, _device.Name) is string name)
+            App.Repository.RenameDevice(_device.SerialNumber, name);
+    }
+
+    private void RefreshButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_device != null)
+            Report(MonitorService.RequestQuotaAsync(_device));
+    }
+
+    private async void DeleteButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_device == null) return;
+        if (!await Ui.ConfirmDeleteAsync(XamlRoot, _device))
+            return;
+
+        var sn = _device.SerialNumber;
+        if (Frame.CanGoBack)
+            Frame.GoBack();
+        App.Repository.RemoveDevice(sn);
     }
 
     #region Керування
@@ -147,8 +249,7 @@ public sealed partial class DeviceDetailsPage : Page
             rows.Children.Add(new TextBlock
             {
                 Text = SectionTitle(group.Key),
-                FontSize = 16,
-                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+                Style = (Style)Resources["CardTitleStyle"]
             });
 
             foreach (var control in group)
@@ -164,15 +265,8 @@ public sealed partial class DeviceDetailsPage : Page
                     rows.Children.Add(row);
             }
 
-            ControlsPanel.Children.Add(new Border
-            {
-                Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
-                BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(16),
-                Child = rows
-            });
+            // Стиль зі сторінки: ThemeResource у ньому стежить за темою сторінки
+            ControlsPanel.Children.Add(new Border { Style = (Style)Resources["CardStyle"], Child = rows });
         }
     }
 
@@ -228,7 +322,7 @@ public sealed partial class DeviceDetailsPage : Page
     {
         VerticalAlignment = VerticalAlignment.Center,
         HorizontalAlignment = HorizontalAlignment.Right,
-        Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemControlForegroundBaseMediumBrush"]
+        Opacity = 0.7
     };
 
     private FrameworkElement ToggleRow(Device device, ToggleControl control)

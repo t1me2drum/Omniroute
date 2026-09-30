@@ -4,7 +4,7 @@
     <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.22621.0</TargetPlatformMinVersion>
     <RootNamespace>Omniroute</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64;ARM64</Platforms>
@@ -17,18 +17,18 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
-    <!-- <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon> -->
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\**\*.*" />
+    <Content Include="Assets\**\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- Тести — окремий проєкт (tests/Omniroute.Tests), у збірку застосунку не входять -->
+  <!-- Тести (tests/Omniroute.Tests) і перевірка без Windows (tools/check-build) — окремі проєкти, у збірку застосунку не входять -->
   <ItemGroup>
-    <Compile Remove="tests\**" />
-    <None Remove="tests\**" />
-    <Page Remove="tests\**" />
+    <Compile Remove="tests\**;tools\**" />
+    <None Remove="tests\**;tools\**" />
+    <Page Remove="tests\**;tools\**" />
   </ItemGroup>
 
   <ItemGroup>

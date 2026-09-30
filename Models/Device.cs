@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Omniroute.Protocol;
 
 namespace Omniroute.Models;
 
@@ -12,7 +13,18 @@ namespace Omniroute.Models;
 public class Device : ObservableObject
 {
     public string SerialNumber { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
+    private string _name = string.Empty;
+
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    /// <summary>
+    /// Змінити назву без сповіщення інтерфейсу (з фонового потоку; список перебудовується за DevicesChanged)
+    /// </summary>
+    public void SetNameSilently(string name) => _name = name;
     public DeviceModel Model { get; set; }
 
     /// <summary>
@@ -28,108 +40,102 @@ public class Device : ObservableObject
     /// </summary>
     public bool IsDeleted { get; set; }
 
+    /// <summary>
+    /// Назву змінено в застосунку: синхронізація з акаунтом її не перезаписує
+    /// </summary>
+    public bool CustomName { get; set; }
+
     #region Телеметрія (не зберігається)
 
+    private DeviceState _state = new();
     private bool _isOnline;
+    private bool _hasData;
     private DateTime _lastSeen;
-    private int? _batteryLevel;
-    private int? _batteryWatts;
-    private int? _timeRemaining;
-    private int? _inputWatts;
-    private int? _outputWatts;
-    private int? _solarWatts;
-    private int? _temperature;
-    private int? _cycles;
-    private bool? _gridConnected;
+    private int _weakGridVolt = DeviceStateLogic.DefaultWeakGridVolt;
 
-    [JsonIgnore]
-    public bool IsOnline
+    /// <summary>
+    /// Оновити телеметрію (лише з UI-потоку). Змінюється багато похідних рядків одразу,
+    /// тому сповіщаємо про зміну всіх властивостей.
+    /// </summary>
+    public void UpdateTelemetry(DeviceState state, bool online, bool hasData, DateTime lastSeen, int weakGridVolt)
     {
-        get => _isOnline;
-        set
-        {
-            if (SetProperty(ref _isOnline, value))
-            {
-                OnPropertyChanged(nameof(IsOffline));
-                OnPropertyChanged(nameof(OnlineText));
-            }
-        }
+        _state = state;
+        _isOnline = online;
+        _hasData = hasData;
+        _lastSeen = lastSeen;
+        _weakGridVolt = weakGridVolt;
+        OnPropertyChanged(string.Empty);
     }
 
-    [JsonIgnore]
-    public DateTime LastSeen { get => _lastSeen; set => SetProperty(ref _lastSeen, value); }
-
-    /// <summary>Заряд батареї 0-100%</summary>
-    [JsonIgnore]
-    public int? BatteryLevel
+    /// <summary>
+    /// Моніторинг зупинено: станція не може вважатися онлайн
+    /// </summary>
+    public void SetOffline()
     {
-        get => _batteryLevel;
-        set
-        {
-            if (SetProperty(ref _batteryLevel, value))
-            {
-                OnPropertyChanged(nameof(BatteryText));
-                OnPropertyChanged(nameof(BatteryPercent));
-            }
-        }
+        _isOnline = false;
+        OnPropertyChanged(string.Empty);
     }
 
-    /// <summary>Баланс батареї: вхід мінус вихід (додатне — заряджається)</summary>
-    [JsonIgnore]
-    public int? BatteryWatts { get => _batteryWatts; set => SetProperty(ref _batteryWatts, value); }
+    [JsonIgnore] public DeviceState State => _state;
+    [JsonIgnore] public bool IsOnline => _isOnline;
+    [JsonIgnore] public bool IsOffline => !_isOnline;
+    [JsonIgnore] public bool HasData => _hasData;
+    [JsonIgnore] public DateTime LastSeen => _lastSeen;
+    [JsonIgnore] public int WeakGridVolt => _weakGridVolt;
 
-    /// <summary>Хвилини до повного заряду/розряду</summary>
-    [JsonIgnore]
-    public int? TimeRemaining { get => _timeRemaining; set => SetProperty(ref _timeRemaining, value); }
+    [JsonIgnore] public int? BatteryLevel => _state.Soc;
+    [JsonIgnore] public int? InputWatts => _state.InputW;
+    [JsonIgnore] public int? OutputWatts => _state.OutputW;
+    [JsonIgnore] public int? SolarWatts => _state.SolarW;
+    [JsonIgnore] public int? Temperature => _state.BatteryTempC;
+    [JsonIgnore] public int? Cycles => _state.Cycles;
+    [JsonIgnore] public bool? GridConnected => _state.GridConnected;
 
-    /// <summary>Вхід (AC/сонце)</summary>
-    [JsonIgnore]
-    public int? InputWatts
-    {
-        get => _inputWatts;
-        set { if (SetProperty(ref _inputWatts, value)) OnPropertyChanged(nameof(InputText)); }
-    }
+    [JsonIgnore] public GridStatus? GridStatus => _state.GetGridStatus(_weakGridVolt);
+    [JsonIgnore] public BatteryFlow Flow => _state.GetBatteryFlow();
 
-    /// <summary>Вихід (AC/DC/USB)</summary>
-    [JsonIgnore]
-    public int? OutputWatts
-    {
-        get => _outputWatts;
-        set { if (SetProperty(ref _outputWatts, value)) OnPropertyChanged(nameof(OutputText)); }
-    }
-
-    [JsonIgnore]
-    public int? SolarWatts { get => _solarWatts; set => SetProperty(ref _solarWatts, value); }
-
-    [JsonIgnore]
-    public int? Temperature { get => _temperature; set => SetProperty(ref _temperature, value); }
-
-    [JsonIgnore]
-    public int? Cycles { get => _cycles; set => SetProperty(ref _cycles, value); }
-
-    [JsonIgnore]
-    public bool? GridConnected
-    {
-        get => _gridConnected;
-        set { if (SetProperty(ref _gridConnected, value)) OnPropertyChanged(nameof(GridText)); }
-    }
+    /// <summary>
+    /// Анімація заряджання: станція на нормальній мережі й батарея не розряджається
+    /// </summary>
+    [JsonIgnore] public bool IsChargingFromGrid => _isOnline && _state.IsChargingFromGrid(_weakGridVolt);
 
     // Готові рядки для інтерфейсу
-    [JsonIgnore] public string BatteryText => _batteryLevel.HasValue ? $"{_batteryLevel}%" : "--";
-    [JsonIgnore] public double BatteryPercent => _batteryLevel ?? 0;
-    [JsonIgnore] public string InputText => FormatWatts(_inputWatts);
-    [JsonIgnore] public string OutputText => FormatWatts(_outputWatts);
+    [JsonIgnore] public string BatteryText => _state.Soc.HasValue ? $"{_state.Soc}%" : "—";
+    [JsonIgnore] public double BatteryPercent => _state.Soc ?? 0;
+    [JsonIgnore] public string InputText => Format.Watts(_state.InputW);
+    [JsonIgnore] public string OutputText => Format.Watts(_state.OutputW);
     [JsonIgnore] public string ModelName => Model.GetDisplayName();
-    [JsonIgnore] public bool IsOffline => !_isOnline;
     [JsonIgnore] public string OnlineText => _isOnline ? "Онлайн" : "Офлайн";
-    [JsonIgnore] public string GridText => _gridConnected switch
+
+    /// <summary>
+    /// Рядок 2 картки: потужності й стан мережі, коли він у нормі (або чому даних немає)
+    /// </summary>
+    [JsonIgnore]
+    public string CardPowerText => !_isOnline
+        ? _hasData ? "Не на зв'язку" : "Очікування даних…"
+        : $"↓ {Format.Watts(_state.InputW)} · ↑ {Format.Watts(_state.OutputW)} · " +
+          (GridLevel == 0 ? Format.GridShort(GridStatus, _state.AcInVolt) : string.Empty);
+
+    /// <summary>
+    /// Рядок 2 картки: слабка мережа або її відсутність (показується кольором)
+    /// </summary>
+    [JsonIgnore]
+    public string CardGridAlertText => _isOnline && GridLevel != 0 ? Format.GridShort(GridStatus, _state.AcInVolt) : string.Empty;
+
+    /// <summary>0 — норма або невідомо, 1 — слабка мережа, 2 — мережі немає (для кольору)</summary>
+    [JsonIgnore]
+    public int GridLevel => GridStatus switch
     {
-        true => "⚡ Від мережі",
-        false => "🔋 Від батареї",
-        null => string.Empty
+        Protocol.GridStatus.Weak => 1,
+        Protocol.GridStatus.None => 2,
+        _ => 0
     };
 
-    public static string FormatWatts(int? watts) => watts.HasValue ? $"{watts} Вт" : "-- Вт";
+    /// <summary>Рядок 3 картки: що робить батарея, або коли були останні дані</summary>
+    [JsonIgnore]
+    public string CardStatusText => _isOnline
+        ? Format.FlowText(Flow)
+        : _lastSeen > DateTime.MinValue ? $"останні дані о {_lastSeen:HH:mm}" : "—";
 
     #endregion
 }

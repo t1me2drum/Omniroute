@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="..\..\Protocol\**\*.cs" Link="Src\Protocol\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\..\Models\DeviceModel.cs" Link="Src\Models\DeviceModel.cs" />
+    <Compile Include="..\..\Models\Format.cs" Link="Src\Models\Format.cs" />
   </ItemGroup>
 
   <ItemGroup>

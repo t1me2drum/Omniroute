@@ -178,9 +178,17 @@ public class Repository
     }
 
     /// <summary>
-    /// Додати станцію вручну (або повернути раніше видалену)
+    /// Станції з акаунта, які користувач видалив: синхронізація їх не повертає
     /// </summary>
-    public Device AddDevice(string serialNumber, string? name)
+    public IReadOnlyList<Device> HiddenDevices
+    {
+        get { lock (_lock) return _devices.Where(d => d.IsDeleted).ToList(); }
+    }
+
+    /// <summary>
+    /// Додати станцію вручну (або повернути раніше видалену). Модель, якщо не вказана, визначається за серійним номером
+    /// </summary>
+    public Device AddDevice(string serialNumber, string? name, DeviceModel? model = null)
     {
         var sn = serialNumber.Trim().ToUpperInvariant();
         Device device;
@@ -190,13 +198,21 @@ public class Repository
             device = _devices.FirstOrDefault(d => d.SerialNumber == sn) ?? new Device { SerialNumber = sn };
             if (!_devices.Contains(device))
             {
-                device.DisplayOrder = _devices.Count == 0 ? 0 : _devices.Max(d => d.DisplayOrder) + 1;
+                device.DisplayOrder = NextOrder();
                 _devices.Add(device);
             }
 
             device.IsDeleted = false;
-            device.Model = DeviceModelExtensions.DetectFromSerial(sn);
-            device.Name = string.IsNullOrWhiteSpace(name) ? (device.Name is { Length: > 0 } n ? n : sn) : name.Trim();
+            device.Model = model ?? DeviceModelExtensions.DetectFromSerial(sn);
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                device.Name = name.Trim();
+                device.CustomName = true;
+            }
+            else if (string.IsNullOrEmpty(device.Name))
+            {
+                device.Name = device.Model == DeviceModel.Unknown ? sn : device.Model.GetDisplayName();
+            }
             _deviceStore.SaveDevices(_devices);
         }
 
@@ -204,8 +220,11 @@ public class Repository
         return device;
     }
 
+    private int NextOrder() => _devices.Count == 0 ? 0 : _devices.Max(d => d.DisplayOrder) + 1;
+
     /// <summary>
-    /// Видалити пристрій. Станція лишається в списку з позначкою, щоб синхронізація не повертала її.
+    /// Видалити станцію лише з цього застосунку. Станція з акаунта лишається прихованою,
+    /// щоб синхронізація не повертала її; додана вручну видаляється повністю.
     /// </summary>
     public void RemoveDevice(string serialNumber)
     {
@@ -215,10 +234,89 @@ public class Repository
             if (device == null)
                 return;
 
-            device.IsDeleted = true;
+            if (device.IsImported)
+                device.IsDeleted = true;
+            else
+                _devices.Remove(device);
             _deviceStore.SaveDevices(_devices);
         }
         DevicesChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// Повернути приховану станцію з акаунта
+    /// </summary>
+    public async Task RestoreDeviceAsync(string serialNumber)
+    {
+        lock (_lock)
+        {
+            var device = _devices.FirstOrDefault(d => d.SerialNumber == serialNumber);
+            if (device == null)
+                return;
+            device.IsDeleted = false;
+            device.DisplayOrder = NextOrder();
+            _deviceStore.SaveDevices(_devices);
+        }
+        DevicesChanged?.Invoke();
+
+        if (Credentials?.HasDeveloperKeys == true)
+            await SyncStationsAsync();
+    }
+
+    /// <summary>
+    /// Перейменувати станцію. Назва лишається й після синхронізації з акаунтом
+    /// </summary>
+    public void RenameDevice(string serialNumber, string name)
+    {
+        Device? device;
+        lock (_lock)
+        {
+            device = _devices.FirstOrDefault(d => d.SerialNumber == serialNumber);
+            if (device == null || string.IsNullOrWhiteSpace(name))
+                return;
+            device.CustomName = true;
+        }
+        // Name прив'язана до інтерфейсу — змінюємо поза lock (виклик з UI-потоку)
+        device.Name = name.Trim();
+        lock (_lock)
+            _deviceStore.SaveDevices(_devices);
+    }
+
+    /// <summary>
+    /// Зберегти новий порядок станцій; відсутні в списку йдуть у кінець у колишньому порядку
+    /// </summary>
+    public void ReorderDevices(IReadOnlyList<string> serialNumbers)
+    {
+        lock (_lock)
+        {
+            var order = 0;
+            foreach (var sn in serialNumbers)
+            {
+                var device = _devices.FirstOrDefault(d => d.SerialNumber == sn);
+                if (device != null)
+                    device.DisplayOrder = order++;
+            }
+            foreach (var device in _devices.Where(d => !serialNumbers.Contains(d.SerialNumber)).OrderBy(d => d.DisplayOrder).ToList())
+            {
+                device.DisplayOrder = order++;
+            }
+            _deviceStore.SaveDevices(_devices);
+        }
+    }
+
+    /// <summary>
+    /// Видалити ключі Developer API. Станції лишаються в списку
+    /// </summary>
+    public void ClearDeveloperKeys()
+    {
+        lock (_lock)
+        {
+            if (_credentials == null)
+                return;
+            _credentials.AccessKey = null;
+            _credentials.SecretKey = null;
+            _credentialStore.SaveCredentials(_credentials);
+        }
     }
 
     /// <summary>
@@ -252,6 +350,7 @@ public class Repository
         }
 
         int added = 0, updated = 0, removed = 0;
+        var renamed = new List<(Device Device, string Name)>();
         lock (_lock)
         {
             // Імпортовані станції, яких більше немає в акаунті, прибираємо
@@ -268,20 +367,26 @@ public class Repository
                         Name = cloud.Name,
                         Model = model,
                         IsImported = true,
-                        DisplayOrder = _devices.Count == 0 ? 0 : _devices.Max(d => d.DisplayOrder) + 1
+                        DisplayOrder = NextOrder()
                     });
                     added++;
                 }
-                else if (!existing.IsDeleted &&
-                         (existing.Name != cloud.Name || existing.Model != model || !existing.IsImported))
+                else if (!existing.IsDeleted)
                 {
-                    existing.Name = cloud.Name;
-                    existing.Model = model;
-                    existing.IsImported = true;
-                    updated++;
+                    // Назву, змінену в застосунку, не перезаписуємо
+                    var name = existing.CustomName ? existing.Name : cloud.Name;
+                    if (existing.Name != name || existing.Model != model || !existing.IsImported)
+                    {
+                        renamed.Add((existing, name));
+                        existing.Model = model;
+                        existing.IsImported = true;
+                        updated++;
+                    }
                 }
             }
 
+            foreach (var (device, name) in renamed)
+                device.SetNameSilently(name);
             _deviceStore.SaveDevices(_devices);
         }
 

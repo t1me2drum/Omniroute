@@ -40,6 +40,48 @@ public class HistoryDbContext : DbContext
         Directory.CreateDirectory(Path.GetDirectoryName(DbPath)!);
         using var db = new HistoryDbContext();
         db.Database.EnsureCreated();
+        AddMissingColumns(db);
+    }
+
+    /// <summary>
+    /// EnsureCreated не змінює наявну базу, тож нові стовпці додаємо самі
+    /// (усі вони допускають NULL, старі записи лишаються без цих значень)
+    /// </summary>
+    private static void AddMissingColumns(HistoryDbContext db)
+    {
+        var wanted = new Dictionary<string, string>
+        {
+            ["SolarWatts"] = "INTEGER",
+            ["AcInWatts"] = "INTEGER",
+            ["Grid"] = "INTEGER"
+        };
+
+        var connection = db.Database.GetDbConnection();
+        connection.Open();
+        try
+        {
+            var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "PRAGMA table_info(History)";
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                    existing.Add(reader.GetString(1));
+            }
+
+            foreach (var (column, type) in wanted)
+            {
+                if (existing.Contains(column))
+                    continue;
+                using var alter = connection.CreateCommand();
+                alter.CommandText = $"ALTER TABLE History ADD COLUMN {column} {type} NULL";
+                alter.ExecuteNonQuery();
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
     }
 
     /// <summary>

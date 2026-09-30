@@ -29,6 +29,11 @@ public static class MonitorService
     /// </summary>
     private sealed record Snapshot(DeviceParams Params, DateTime LastSeen);
 
+    /// <summary>
+    /// Станції, від яких у цьому запуску вже прийшли дані (для журналу діагностики)
+    /// </summary>
+    private static readonly HashSet<string> _heard = new();
+
     // Усі поля нижче захищені _lock
     private static readonly object _lock = new();
     private static CancellationTokenSource? _cts;
@@ -46,6 +51,11 @@ public static class MonitorService
     /// Поточний стан з'єднання для інтерфейсу
     /// </summary>
     public static string Status { get; private set; } = "Зупинено";
+
+    /// <summary>
+    /// Вид стану з'єднання (для банера на головному екрані)
+    /// </summary>
+    public static ConnectionState State { get; private set; } = ConnectionState.Stopped;
 
     /// <summary>
     /// Змінився стан з'єднання. Викликається в UI-потоці.
@@ -109,18 +119,19 @@ public static class MonitorService
             _userId = null;
             _subscribed = new HashSet<string>();
             _snapshots = new Dictionary<string, Snapshot>();
+            _heard.Clear();
         }
 
         cts?.Cancel();
         link?.Dispose();
-        SetStatus("Зупинено");
+        SetStatus(ConnectionState.Stopped, "Зупинено");
 
         // Без моніторингу станції не можуть вважатися онлайн
         _dispatcher?.TryEnqueue(() =>
         {
             foreach (var device in App.Repository.Devices)
             {
-                device.IsOnline = false;
+                device.SetOffline();
             }
         });
     }
@@ -136,11 +147,11 @@ public static class MonitorService
             var credentials = App.Repository.Credentials;
             if (credentials == null)
             {
-                SetStatus("Не виконано вхід");
+                SetStatus(ConnectionState.Stopped, "Не виконано вхід");
                 return;
             }
 
-            SetStatus("Підключення…");
+            SetStatus(ConnectionState.Connecting, "Підключення…");
             MqttLink? link = null;
 
             try
@@ -169,10 +180,12 @@ public static class MonitorService
 
                 await link.ConnectAsync(serials.SelectMany(sn => TopicsFor(session.UserId, sn)));
                 backoff = MinBackoff;
+                DiagLog.Log("conn", "підписка: " + string.Join(", ",
+                    App.Repository.ActiveDevices.Select(d => $"{d.Model.GetDisplayName()} {d.SerialNumber}")));
 
                 // Далі MqttLink перепідключається сам; сюди повертаємось лише після фатальної помилки
                 var reason = await failure.Task.WaitAsync(token);
-                SetStatus($"Перепідключення… ({reason})");
+                SetStatus(ConnectionState.Reconnecting, $"Перепідключення… ({reason})");
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
@@ -185,13 +198,13 @@ public static class MonitorService
                 // зупиняємось, щоб після нового входу Start() запустив моніторинг знову
                 ReleaseLink(link);
                 StopOwned(token);
-                SetStatus($"Помилка входу: {ex.Message}");
+                SetStatus(ConnectionState.Failed, $"Помилка входу: {ex.Message}");
                 return;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"MonitorService: connect failed - {ex}");
-                SetStatus($"Перепідключення… ({ex.Message})");
+                DiagLog.Log("conn", "connect failed", ex);
+                SetStatus(ConnectionState.Reconnecting, $"Перепідключення… ({ex.Message})");
             }
 
             ReleaseLink(link);
@@ -241,7 +254,10 @@ public static class MonitorService
 
     private static void OnConnectionChanged(bool connected)
     {
-        SetStatus(connected ? "Підключено" : "Зв'язок втрачено, перепідключення…");
+        if (connected)
+            SetStatus(ConnectionState.Connected, "Підключено");
+        else
+            SetStatus(ConnectionState.Reconnecting, "Зв'язок втрачено, перепідключення…");
         if (connected)
         {
             _ = RequestAllQuotasAsync();
@@ -298,7 +314,7 @@ public static class MonitorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"MonitorService: subscription sync failed - {ex.Message}");
+            DiagLog.Log("conn", "subscription sync failed", ex);
         }
     }
 
@@ -336,12 +352,28 @@ public static class MonitorService
         if (device == null)
             return;
 
-        var parsed = Protocols.For(device.Model).Parse(kind, payload);
+        DeviceParams parsed;
+        try
+        {
+            parsed = Protocols.For(device.Model).Parse(kind, payload);
+        }
+        catch (Exception ex)
+        {
+            // Короткий hex-префікс, щоб за журналом можна було впізнати невідомий формат кадру
+            DiagLog.Log("parse", $"{device.Model.GetDisplayName()} {sn} {kind} {payload.Length} B: {DiagLog.Hex(payload)}", ex);
+            parsed = new DeviceParams();
+        }
 
         lock (_lock)
         {
             if (_cts == null)
                 return;
+
+            if (_heard.Add(sn))
+            {
+                DiagLog.Log("data", $"перші дані від {device.Model.GetDisplayName()} {sn}: {kind}, {payload.Length} B, полів {parsed.Count}" +
+                    (parsed.Count == 0 ? $", {DiagLog.Hex(payload)}" : ""));
+            }
 
             // Новий словник замість зміни старого: читачі тримають незмінну копію
             _snapshots.TryGetValue(sn, out var old);
@@ -373,6 +405,21 @@ public static class MonitorService
         {
             await RequestQuotaAsync(link, userId, device);
         }
+    }
+
+    /// <summary>
+    /// Запросити повний стан станції (сторінка станції робить це під час відкриття і кнопкою «Оновити»)
+    /// </summary>
+    public static Task<bool> RequestQuotaAsync(Device device)
+    {
+        MqttLink? link;
+        string? userId;
+        lock (_lock)
+        {
+            link = _link;
+            userId = _userId;
+        }
+        return link == null || userId == null ? Task.FromResult(false) : RequestQuotaAsync(link, userId, device);
     }
 
     private static Task<bool> RequestQuotaAsync(MqttLink link, string userId, Device device)
@@ -417,7 +464,7 @@ public static class MonitorService
         var ok = await link.PublishAsync($"/app/{userId}/{device.SerialNumber}/thing/property/set", command.Payload);
         if (!ok)
         {
-            System.Diagnostics.Debug.WriteLine($"MonitorService: command publish failed for {device.SerialNumber}");
+            DiagLog.Log("cmd", $"publish failed for {device.Model.GetDisplayName()} {device.SerialNumber}");
             return false;
         }
 
@@ -471,7 +518,7 @@ public static class MonitorService
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"MonitorService: tick failed - {ex}");
+                DiagLog.Log("service", "tick failed", ex);
             }
 
             try
@@ -497,26 +544,31 @@ public static class MonitorService
             snapshots = _snapshots;
         }
 
-        var updates = new List<(Device Device, DeviceState State, bool Online, DateTime LastSeen)>();
+        var weakGridVolt = App.Repository.Settings.WeakGridVolt;
+        var updates = new List<(Device Device, DeviceState State, bool Online, bool HasData, DateTime LastSeen)>();
         foreach (var device in App.Repository.ActiveDevices)
         {
             snapshots.TryGetValue(device.SerialNumber, out var snap);
             var online = snap != null && now - snap.LastSeen < OfflineAfter;
             var state = Protocols.For(device.Model).GetState(snap?.Params ?? new DeviceParams());
-            updates.Add((device, state, online, snap?.LastSeen ?? default));
+            var lastSeen = snap != null && snap.LastSeen > DateTime.MinValue ? snap.LastSeen : DateTime.MinValue;
+            updates.Add((device, state, online, lastSeen > DateTime.MinValue, lastSeen));
 
-            if (record && online)
+            if (record && online && state.Soc.HasValue)
             {
                 await App.Repository.AddHistoryEntryAsync(new HistoryEntry
                 {
                     SerialNumber = device.SerialNumber,
                     Timestamp = new DateTime(minute * TimeSpan.TicksPerMinute),
-                    BatteryLevel = state.Soc ?? 0,
+                    BatteryLevel = state.Soc.Value,
                     BatteryWatts = NetBatteryWatts(state),
                     InputWatts = state.InputW,
                     OutputWatts = state.OutputW,
+                    SolarWatts = state.SolarW,
+                    AcInWatts = state.AcInW,
                     Temperature = state.BatteryTempC,
-                    HasAcInput = state.GridConnected ?? false
+                    HasAcInput = state.GridConnected ?? false,
+                    Grid = state.GridConnected
                 });
             }
         }
@@ -536,28 +588,13 @@ public static class MonitorService
         // Властивості станцій прив'язані до інтерфейсу — змінюємо їх лише в UI-потоці
         _dispatcher?.TryEnqueue(() =>
         {
-            foreach (var (device, state, online, lastSeen) in updates)
+            foreach (var (device, state, online, hasData, lastSeen) in updates)
             {
-                ApplyState(device, state, online, lastSeen);
+                device.UpdateTelemetry(state, online, hasData, lastSeen, weakGridVolt);
                 NotificationService.Evaluate(device, state, online);
             }
             ParamsUpdated?.Invoke();
         });
-    }
-
-    private static void ApplyState(Device device, DeviceState state, bool online, DateTime lastSeen)
-    {
-        device.IsOnline = online;
-        device.LastSeen = lastSeen;
-        device.BatteryLevel = state.Soc;
-        device.BatteryWatts = NetBatteryWatts(state);
-        device.InputWatts = state.InputW;
-        device.OutputWatts = state.OutputW;
-        device.SolarWatts = state.SolarW;
-        device.Temperature = state.BatteryTempC;
-        device.Cycles = state.Cycles;
-        device.GridConnected = state.GridConnected;
-        device.TimeRemaining = state.ChargeRemainMin ?? state.DischargeRemainMin;
     }
 
     /// <summary>
@@ -570,24 +607,61 @@ public static class MonitorService
 
     #endregion
 
+    /// <summary>
+    /// Короткий підсумок для підказки іконки в треї (як summary() постійного сповіщення в Android)
+    /// </summary>
+    public static string Summary()
+    {
+        if (State != ConnectionState.Connected)
+            return Status;
+
+        var devices = App.Repository.ActiveDevices;
+        if (devices.Count == 0)
+            return "Додайте станцію";
+
+        return string.Join("\n", devices.Select(d =>
+        {
+            var weak = d.GridStatus == Protocol.GridStatus.Weak ? $" ⚠{d.State.AcInVolt}В" : "";
+            var online = d.IsOnline ? "" : " (офлайн)";
+            return $"{d.Name}: {d.BatteryText} ↓{d.InputWatts ?? 0} ↑{d.OutputWatts ?? 0} Вт{weak}{online}";
+        }));
+    }
+
     private static async Task SyncStationsSafeAsync()
     {
         try
         {
-            await App.Repository.SyncStationsAsync();
+            var r = await App.Repository.SyncStationsAsync();
+            DiagLog.Log("sync", $"stations: +{r.Added} ~{r.Updated} -{r.Removed}, unsupported {r.Unsupported.Count}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"MonitorService: station sync failed - {ex.Message}");
+            DiagLog.Log("sync", "station sync failed", ex);
         }
     }
 
-    private static void SetStatus(string status)
+    private static void SetStatus(ConnectionState state, string status)
     {
+        if (Status != status)
+            DiagLog.Log("conn", status);
+
+        State = state;
         Status = status;
         if (_dispatcher == null || _dispatcher.HasThreadAccess)
             StatusChanged?.Invoke(status);
         else
             _dispatcher.TryEnqueue(() => StatusChanged?.Invoke(status));
     }
+}
+
+/// <summary>
+/// Вид стану з'єднання з хмарою
+/// </summary>
+public enum ConnectionState
+{
+    Stopped,
+    Connecting,
+    Connected,
+    Reconnecting,
+    Failed
 }
