@@ -7,11 +7,9 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using PowerHub.Models;
-using PowerHub.Protocol;
 using PowerHub.Services;
 using Windows.Foundation;
 
@@ -19,22 +17,17 @@ namespace PowerHub.Views;
 
 /// <summary>
 /// Плитка станції для десктопного дашборда: кільце заряду, потужності, стан мережі,
-/// міні-графік заряду за 24 год і швидкі перемикачі виходів AC / DC / USB
+/// міні-графік заряду за 24 год. Керування навмисно лише на сторінці станції:
+/// кнопки на плитці легко натиснути випадково
 /// </summary>
 public sealed class StationTile : Grid
 {
     public const double TileWidth = 340;
-    public const double TileHeight = 290;
+    public const double TileHeight = 250;
 
     private const double SparkHeight = 36;
     private static readonly TimeSpan SparkRange = TimeSpan.FromHours(24);
     private static readonly TimeSpan SparkRefresh = TimeSpan.FromMinutes(5);
-
-    /// <summary>Перемикачі виходів, які показуються на плитці: id елемента керування → підпис кнопки</summary>
-    private static readonly (string Id, string Label)[] QuickOutputs =
-    {
-        ("ac_out", "AC"), ("ac_hv", "AC"), ("ac_lv", "AC LV"), ("dc_out", "DC"), ("dc12", "DC"), ("usb_out", "USB")
-    };
 
     private static readonly SolidColorBrush SparkBrush = new(ColorHelper.FromArgb(0xFF, 0x0E, 0x9F, 0x82));
     private static readonly SolidColorBrush OnlineBrush = new(ColorHelper.FromArgb(0xFF, 0x0E, 0x9F, 0x82));
@@ -51,12 +44,9 @@ public sealed class StationTile : Grid
     private readonly TextBlock _flow = new() { FontSize = 13, Opacity = 0.7, TextWrapping = TextWrapping.Wrap, MaxLines = 2 };
     private readonly Canvas _spark = new() { Height = SparkHeight };
     private readonly TextBlock _sparkLabel = new() { FontSize = 11, Opacity = 0.6, Text = "заряд за 24 год" };
-    private readonly StackPanel _buttons = new() { Orientation = Orientation.Horizontal, Spacing = 8 };
-    private readonly List<(ToggleControl Control, ToggleButton Button)> _toggles = new();
     private readonly DispatcherQueueTimer _sparkTimer;
 
     private List<(DateTime Ts, int Soc)> _sparkData = new();
-    private bool _refreshing;
     private bool _loading;
 
     public static readonly DependencyProperty DeviceProperty = DependencyProperty.Register(
@@ -75,7 +65,7 @@ public sealed class StationTile : Grid
         Height = TileHeight;
         Padding = new Thickness(16);
         RowSpacing = 10;
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 3; i++)
             RowDefinitions.Add(new RowDefinition { Height = i == 1 ? new GridLength(1, GridUnitType.Star) : GridLength.Auto });
 
         // Рядок 0: назва, модель, онлайн
@@ -116,24 +106,18 @@ public sealed class StationTile : Grid
         Children.Add(spark);
         _spark.SizeChanged += (_, _) => DrawSpark();
 
-        // Рядок 3: швидкі перемикачі виходів
-        SetRow(_buttons, 3);
-        Children.Add(_buttons);
-
         _sparkTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _sparkTimer.Interval = SparkRefresh;
         _sparkTimer.Tick += (_, _) => LoadSpark();
 
         Loaded += (_, _) =>
         {
-            MonitorService.ParamsUpdated += RefreshToggles;
             _sparkTimer.Start();
             LoadSpark();
             Update();
         };
         Unloaded += (_, _) =>
         {
-            MonitorService.ParamsUpdated -= RefreshToggles;
             _sparkTimer.Stop();
         };
     }
@@ -145,7 +129,6 @@ public sealed class StationTile : Grid
         if (newDevice != null)
             newDevice.PropertyChanged += Device_PropertyChanged;
 
-        BuildToggles();
         _sparkData = new List<(DateTime, int)>();
         DrawSpark();
         if (IsLoaded)
@@ -181,74 +164,6 @@ public sealed class StationTile : Grid
             _grid.Foreground = Ui.AlertBrush(d.GridLevel);
         _flow.Text = d.CardStatusText;
     }
-
-    #region Перемикачі
-
-    private void BuildToggles()
-    {
-        _buttons.Children.Clear();
-        _toggles.Clear();
-        var d = Device;
-        if (d == null)
-            return;
-
-        var controls = Protocols.For(d.Model).GetControls(d.SerialNumber).OfType<ToggleControl>().ToList();
-        foreach (var (id, label) in QuickOutputs)
-        {
-            var control = controls.FirstOrDefault(c => c.Id == id);
-            if (control == null)
-                continue;
-
-            var button = new ToggleButton { Content = label, MinWidth = 64 };
-            ToolTipService.SetToolTip(button, control.Label);
-            button.Click += async (_, _) =>
-            {
-                if (_refreshing || Device is not Device device)
-                    return;
-                var on = button.IsChecked == true;
-                bool ok;
-                try
-                {
-                    ok = await MonitorService.ToggleAsync(device, control, on);
-                }
-                catch (Exception ex)
-                {
-                    DiagLog.Log("cmd", "quick toggle failed", ex);
-                    ok = false;
-                }
-                if (!ok)
-                    RefreshToggles();
-            };
-            _buttons.Children.Add(button);
-            _toggles.Add((control, button));
-        }
-        RefreshToggles();
-    }
-
-    private void RefreshToggles()
-    {
-        var d = Device;
-        if (d == null)
-            return;
-
-        var parameters = MonitorService.GetParams(d.SerialNumber);
-        _refreshing = true;
-        try
-        {
-            foreach (var (control, button) in _toggles)
-            {
-                var value = control.Read(parameters);
-                button.IsChecked = value == true;
-                button.Opacity = value.HasValue ? 1 : 0.6;
-            }
-        }
-        finally
-        {
-            _refreshing = false;
-        }
-    }
-
-    #endregion
 
     #region Міні-графік
 
