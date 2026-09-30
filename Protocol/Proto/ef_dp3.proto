@@ -3,7 +3,7 @@ syntax = "proto3";
 
 option java_package = "app.powerhub.proto";
 option java_outer_classname = "DeltaPro3Proto";
-option csharp_namespace = "Omniroute.Protocol.Proto";
+option csharp_namespace = "PowerHub.Protocol.Proto";
 
 message DP3Header
 {

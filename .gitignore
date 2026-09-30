@@ -90,3 +90,6 @@ graphify-out/cache/last_query_stamp
 
 ## Архіви релізів
 dist/
+
+## Перевірка збирання без Windows: згенеровані заглушки
+tools/check-build/Stubs/

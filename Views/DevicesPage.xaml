@@ -1,127 +1,180 @@
 <Page
-    x:Class="Omniroute.Views.DevicesPage"
+    x:Class="PowerHub.Views.DevicesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Omniroute.Models"
+    xmlns:models="using:PowerHub.Models"
+    xmlns:views="using:PowerHub.Views"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Grid Grid.Row="0" Padding="16">
+        <!-- Заголовок і дії -->
+        <Grid Grid.Row="0" Padding="16,8,8,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
             <StackPanel VerticalAlignment="Center">
                 <TextBlock Text="Мої станції" FontSize="24" FontWeight="SemiBold"/>
-                <TextBlock x:Name="StatusText" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                <TextBlock x:Name="StatusText" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
-            <CommandBar HorizontalAlignment="Right" DefaultLabelPosition="Right">
-                <AppBarButton Icon="Refresh" Label="Оновити" Click="RefreshButton_Click"/>
+            <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent" IsOpen="False" VerticalAlignment="Center">
+                <AppBarButton x:Name="SyncButton" Icon="Sync" Label="Оновити список" Click="SyncButton_Click"
+                              ToolTipService.ToolTip="Підтягнути станції з акаунта (ключі Developer API)"/>
+                <AppBarButton Icon="Sort" Label="Сортування">
+                    <AppBarButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutItem Text="Спершу онлайн" Click="SortOnline_Click"/>
+                            <MenuFlyoutItem Text="За назвою" Click="SortName_Click"/>
+                            <MenuFlyoutItem Text="За рівнем заряду" Click="SortSoc_Click"/>
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
                 <AppBarButton Icon="Add" Label="Додати" Click="AddButton_Click"/>
                 <AppBarButton Icon="Setting" Label="Налаштування" Click="SettingsButton_Click"/>
             </CommandBar>
         </Grid>
 
-        <!-- Content -->
-        <Grid Grid.Row="1">
-            <!-- Loading State -->
-            <StackPanel x:Name="LoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Visibility="Collapsed">
-                <ProgressRing IsActive="True" Width="48" Height="48"/>
-                <TextBlock Text="Завантаження станцій..." FontSize="16"/>
-            </StackPanel>
+        <!-- Стан з'єднання з хмарою (як ConnectionBanner в Android-версії) -->
+        <InfoBar x:Name="ConnectionBar" Grid.Row="1" Margin="16,0,16,8" IsClosable="False" IsOpen="False"/>
 
-            <!-- Empty State -->
-            <StackPanel x:Name="EmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Visibility="Collapsed">
-                <FontIcon Glyph="&#xE895;" FontSize="64" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                <TextBlock Text="Немає станцій" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                <TextBlock Text="Додайте свою першу станцію EcoFlow"
-                          Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                          HorizontalAlignment="Center"/>
+        <Grid Grid.Row="2">
+            <ProgressRing x:Name="SyncProgress" IsActive="False" Width="40" Height="40" VerticalAlignment="Top" Margin="0,24,0,0"/>
+
+            <!-- Порожній список -->
+            <StackPanel x:Name="EmptyPanel" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="460" Spacing="12" Visibility="Collapsed">
+                <TextBlock Text="Станцій ще немає" FontSize="22" FontWeight="SemiBold"/>
+                <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Text="Додайте ключі Developer API в налаштуваннях, щоб підтягнути всі станції акаунта, або натисніть «Додати» і введіть серійний номер вручну."/>
                 <Button Content="Додати станцію" Click="AddButton_Click" Style="{StaticResource AccentButtonStyle}"/>
             </StackPanel>
 
-            <!-- Devices Grid -->
-            <ScrollViewer x:Name="DevicesScrollViewer" Padding="16">
-                <ItemsRepeater x:Name="DevicesRepeater" ItemsSource="{x:Bind Devices}">
-                    <ItemsRepeater.Layout>
-                        <UniformGridLayout MinItemWidth="300" MinItemHeight="250" MinRowSpacing="12" MinColumnSpacing="12" ItemsStretch="Fill"/>
-                    </ItemsRepeater.Layout>
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="models:Device">
-                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                   BorderThickness="1"
-                                   CornerRadius="8"
-                                   Padding="16">
-                                <Grid RowSpacing="10">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
+            <!-- Компактні картки; порядок змінюється перетягуванням -->
+            <ListView x:Name="DevicesList"
+                      ItemsSource="{x:Bind Devices}"
+                      SelectionMode="None"
+                      IsItemClickEnabled="True"
+                      ItemClick="DevicesList_ItemClick"
+                      CanReorderItems="True"
+                      CanDragItems="True"
+                      AllowDrop="True"
+                      DragItemsCompleted="DevicesList_DragItemsCompleted"
+                      Padding="12,0,12,16">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0,0,0,8"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Device">
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1" CornerRadius="8" Padding="12,10,4,10">
+                            <Border.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Перейменувати" Tag="{x:Bind SerialNumber}" Click="RenameItem_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Edit"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Видалити" Tag="{x:Bind SerialNumber}" Click="DeleteItem_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Delete"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Border.ContextFlyout>
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                                    <!-- Назва, модель і статус -->
-                                    <Grid Grid.Row="0" ColumnSpacing="8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel>
-                                            <TextBlock Text="{x:Bind Name}" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                                            <TextBlock Text="{x:Bind ModelName}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
-                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
-                                                     Fill="{ThemeResource SystemFillColorSuccessBrush}"
-                                                     Visibility="{x:Bind IsOnline, Mode=OneWay}"/>
-                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
-                                                     Fill="{ThemeResource TextFillColorDisabledBrush}"
-                                                     Visibility="{x:Bind IsOffline, Mode=OneWay}"/>
-                                            <TextBlock Text="{x:Bind OnlineText, Mode=OneWay}" FontSize="12"
-                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                        </StackPanel>
-                                    </Grid>
+                                <views:SocRing RingSize="56" StrokeWidth="6"
+                                               Soc="{x:Bind BatteryLevel, Mode=OneWay}"
+                                               IsOnline="{x:Bind IsOnline, Mode=OneWay}"
+                                               IsCharging="{x:Bind IsChargingFromGrid, Mode=OneWay}"/>
 
-                                    <!-- Заряд -->
-                                    <Grid Grid.Row="1">
-                                        <TextBlock Text="{x:Bind BatteryText, Mode=OneWay}" FontSize="40" FontWeight="SemiBold" LineHeight="44"/>
-                                        <TextBlock Text="{x:Bind GridText, Mode=OneWay}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                    <!-- Рядок 1: назва й модель -->
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{x:Bind ModelName}" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,1"
                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                    </Grid>
-                                    <ProgressBar Grid.Row="2" Value="{x:Bind BatteryPercent, Mode=OneWay}" Maximum="100"/>
+                                    </StackPanel>
+                                    <!-- Рядок 2: вхід / вихід і стан мережі -->
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{x:Bind CardPowerText, Mode=OneWay}" FontSize="13" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{x:Bind CardGridAlertText, Mode=OneWay}" FontSize="13"
+                                                   Foreground="{x:Bind views:Ui.AlertBrush(GridLevel), Mode=OneWay}"/>
+                                    </StackPanel>
+                                    <!-- Рядок 3: що робить батарея або коли були останні дані -->
+                                    <TextBlock Text="{x:Bind CardStatusText, Mode=OneWay}" FontSize="13"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
 
-                                    <!-- Потужності -->
-                                    <Grid Grid.Row="3" ColumnSpacing="16">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0" Spacing="2">
-                                            <TextBlock Text="Вхід" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock Text="{x:Bind InputText, Mode=OneWay}" FontSize="16" FontWeight="SemiBold"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Spacing="2">
-                                            <TextBlock Text="Вихід" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock Text="{x:Bind OutputText, Mode=OneWay}" FontSize="16" FontWeight="SemiBold"/>
-                                        </StackPanel>
-                                    </Grid>
+                                <FontIcon Grid.Column="2" Glyph="&#xE76F;" FontSize="16" Margin="8,0"
+                                          Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                          ToolTipService.ToolTip="Перетягніть, щоб змінити порядок"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
 
-                                    <!-- Дії -->
-                                    <Button Grid.Row="5" Content="Детальніше" HorizontalAlignment="Stretch" Click="DeviceButton_Click" Tag="{x:Bind SerialNumber}"/>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
+            <!-- Десктопний дашборд: плитки в сітці (Налаштування → Вигляд головного екрана) -->
+            <GridView x:Name="TilesGrid"
+                      ItemsSource="{x:Bind Devices}"
+                      SelectionMode="None"
+                      IsItemClickEnabled="True"
+                      ItemClick="DevicesList_ItemClick"
+                      CanReorderItems="True"
+                      CanDragItems="True"
+                      AllowDrop="True"
+                      DragItemsCompleted="DevicesList_DragItemsCompleted"
+                      Padding="12,0,12,16"
+                      Visibility="Collapsed">
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="Margin" Value="0,0,12,12"/>
+                        <Setter Property="Padding" Value="0"/>
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Device">
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1" CornerRadius="8">
+                            <Border.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Перейменувати" Tag="{x:Bind SerialNumber}" Click="RenameItem_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Edit"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Видалити" Tag="{x:Bind SerialNumber}" Click="DeleteItem_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Delete"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Border.ContextFlyout>
+                            <views:StationTile Device="{x:Bind}"/>
+                        </Border>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
         </Grid>
     </Grid>
 </Page>

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Тести протоколів і логіки стану. Компілюють лише код без WinUI, тож запускаються будь-де:
+       dotnet test tests/PowerHub.Tests -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>PowerHub.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Protocol\**\*.cs" Link="Src\Protocol\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\Models\DeviceModel.cs" Link="Src\Models\DeviceModel.cs" />
+    <Compile Include="..\..\Models\Format.cs" Link="Src\Models\Format.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.28.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+</Project>

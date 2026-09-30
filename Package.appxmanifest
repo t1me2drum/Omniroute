@@ -6,12 +6,12 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="Omniroute"
+    Name="PowerHub"
     Publisher="CN=t1me2drum"
     Version="0.1.0.0" />
 
   <Properties>
-    <DisplayName>Omniroute</DisplayName>
+    <DisplayName>PowerHub</DisplayName>
     <PublisherDisplayName>t1me2drum</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -29,7 +29,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Omniroute"
+        DisplayName="PowerHub"
         Description="EcoFlow моніторинг станцій для Windows 11"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"

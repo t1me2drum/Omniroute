@@ -1,4 +1,4 @@
-namespace Omniroute.Models;
+namespace PowerHub.Models;
 
 /// <summary>
 /// Налаштування застосунку
@@ -18,8 +18,23 @@ public class AppSettings
     public bool NotifyOnPowerLoss { get; set; } = true;
     public bool NotifyOnLowBattery { get; set; } = true;
     public int LowBatteryThreshold { get; set; } = 20;
-    public bool NotifyOnFullCharge { get; set; } = false;
+    public bool NotifyOnFullCharge { get; set; } = true;
     public bool NotifyOnOffline { get; set; } = true;
+
+    /// <summary>
+    /// Нижче цієї напруги мережа вважається слабкою: станція не заряджається (В)
+    /// </summary>
+    public int WeakGridVolt { get; set; } = Protocol.DeviceStateLogic.DefaultWeakGridVolt;
+
+    // Робота у фоні
+    /// <summary>Закриття вікна ховає застосунок у трей, моніторинг і сповіщення працюють далі</summary>
+    public bool CloseToTray { get; set; } = true;
+
+    /// <summary>Запускати разом з Windows (згорнутим у трей)</summary>
+    public bool StartWithWindows { get; set; }
+
+    /// <summary>Вигляд головного екрана: компактний список (як на телефоні) або дашборд плиток</summary>
+    public HomeLayout Layout { get; set; } = HomeLayout.Compact;
 
     // Сортування пристроїв
     public DeviceSortMode SortMode { get; set; } = DeviceSortMode.Custom;
@@ -33,6 +48,15 @@ public enum ThemeMode
     Light,
     Dark,
     System
+}
+
+/// <summary>
+/// Вигляд головного екрана
+/// </summary>
+public enum HomeLayout
+{
+    Compact,    // Компактні картки списком
+    Dashboard   // Плитки в сітці з міні-графіком і перемикачами виходів
 }
 
 /// <summary>

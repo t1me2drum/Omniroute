@@ -1,11 +1,32 @@
 <Page
-    x:Class="Omniroute.Views.DeviceDetailsPage"
+    x:Class="PowerHub.Views.DeviceDetailsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:PowerHub.Views"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+        </Style>
+        <Style x:Key="CardTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style x:Key="StatLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </Style>
+        <Style x:Key="StatValueStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -13,104 +34,126 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Grid Grid.Row="0" Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <Button Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock x:Name="DeviceNameText" FontSize="24" FontWeight="SemiBold"/>
-                    <TextBlock x:Name="DeviceModelText" FontSize="14" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+        <!-- Заголовок -->
+        <Grid Grid.Row="0" Padding="8,8,8,0" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}" VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock x:Name="DeviceNameText" FontSize="22" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                    <Border x:Name="OnlineIndicator" Background="{ThemeResource SystemFillColorSuccessBrush}"
+                            CornerRadius="4" Padding="8,2" VerticalAlignment="Center">
+                        <TextBlock Text="онлайн" FontSize="12" Foreground="White"/>
+                    </Border>
                 </StackPanel>
+                <TextBlock x:Name="DeviceModelText" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                <Border x:Name="OnlineIndicator" Background="{ThemeResource SystemFillColorSuccessBrush}"
-                       CornerRadius="4" Padding="8,4">
-                    <TextBlock Text="Online" FontSize="12" Foreground="White"/>
-                </Border>
-            </StackPanel>
+            <CommandBar Grid.Column="2" DefaultLabelPosition="Collapsed" Background="Transparent" VerticalAlignment="Center">
+                <AppBarButton Icon="Edit" Label="Перейменувати" ToolTipService.ToolTip="Перейменувати" Click="RenameButton_Click"/>
+                <AppBarButton Icon="Refresh" Label="Оновити" ToolTipService.ToolTip="Запросити повний стан" Click="RefreshButton_Click"/>
+                <AppBarButton Icon="Delete" Label="Видалити" ToolTipService.ToolTip="Видалити станцію" Click="DeleteButton_Click"/>
+            </CommandBar>
         </Grid>
 
-        <!-- Content -->
-        <ScrollViewer Grid.Row="1" Padding="16">
-            <StackPanel Spacing="16">
-                <!-- Battery Status -->
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                       BorderThickness="1"
-                       CornerRadius="8"
-                       Padding="16">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="Статус батареї" FontSize="18" FontWeight="SemiBold"/>
+        <Pivot x:Name="Tabs" Grid.Row="1" SelectionChanged="Tabs_SelectionChanged">
+            <!-- Огляд -->
+            <PivotItem Header="Огляд">
+                <ScrollViewer>
+                    <StackPanel Spacing="12" Padding="0,8,0,16" MaxWidth="720" HorizontalAlignment="Stretch">
+                        <views:SocRing x:Name="Ring" RingSize="200" StrokeWidth="12" HorizontalAlignment="Center"/>
 
-                        <Grid>
-                            <TextBlock x:Name="BatteryLevelText" FontSize="64" FontWeight="Bold" HorizontalAlignment="Center" Text="--"/>
-                        </Grid>
+                        <Border x:Name="WeakGridCard" CornerRadius="8" Padding="12" Visibility="Collapsed">
+                            <Border.Background>
+                                <SolidColorBrush Color="#F2A900" Opacity="0.18"/>
+                            </Border.Background>
+                            <TextBlock x:Name="WeakGridText" TextWrapping="Wrap"/>
+                        </Border>
 
-                        <ProgressBar x:Name="BatteryProgress" Maximum="100" Height="8"/>
+                        <TextBlock x:Name="FlowText" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
 
-                        <Grid ColumnSpacing="16">
+                        <Grid ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Вхід" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                <TextBlock x:Name="InputText" Text="-- Вт" FontSize="16" FontWeight="SemiBold"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="Вихід" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                <TextBlock x:Name="OutputText" Text="-- Вт" FontSize="16" FontWeight="SemiBold"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Сонце" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                <TextBlock x:Name="SolarText" Text="-- Вт" FontSize="16" FontWeight="SemiBold"/>
-                            </StackPanel>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Вхід" Style="{StaticResource StatLabelStyle}" FontSize="12"/>
+                                    <TextBlock x:Name="InputText" FontSize="26"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Вихід" Style="{StaticResource StatLabelStyle}" FontSize="12"/>
+                                    <TextBlock x:Name="OutputText" FontSize="26"/>
+                                </StackPanel>
+                            </Border>
                         </Grid>
-                    </StackPanel>
-                </Border>
 
-                <!-- Controls -->
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                       BorderThickness="1"
-                       CornerRadius="8"
-                       Padding="16">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="Керування" FontSize="18" FontWeight="SemiBold"/>
-                        <TextBlock Text="Елементи керування будуть додані в наступних версіях"
-                                  Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                    </StackPanel>
-                </Border>
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Джерела" Style="{StaticResource CardTitleStyle}"/>
+                                <Grid><TextBlock Text="Мережа AC" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="AcInText" Style="{StaticResource StatValueStyle}"/></Grid>
+                                <Grid><TextBlock Text="Сонце" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="SolarText" Style="{StaticResource StatValueStyle}"/></Grid>
+                                <Grid><TextBlock Text="Стан мережі" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="GridStateText" Style="{StaticResource StatValueStyle}"/></Grid>
+                                <Rectangle Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" Margin="0,4"/>
+                                <TextBlock Text="Споживачі" Style="{StaticResource CardTitleStyle}"/>
+                                <Grid><TextBlock Text="AC виходи" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="AcOutText" Style="{StaticResource StatValueStyle}"/></Grid>
+                                <Grid><TextBlock Text="DC 12V" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="DcOutText" Style="{StaticResource StatValueStyle}"/></Grid>
+                                <Grid><TextBlock Text="USB / Type-C" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="UsbOutText" Style="{StaticResource StatValueStyle}"/></Grid>
+                            </StackPanel>
+                        </Border>
 
-                <!-- Info -->
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                       BorderThickness="1"
-                       CornerRadius="8"
-                       Padding="16">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="Інформація" FontSize="18" FontWeight="SemiBold"/>
-                        <StackPanel Spacing="8">
-                            <Grid>
-                                <TextBlock Text="Серійний номер" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                <TextBlock x:Name="SerialNumberText" HorizontalAlignment="Right" Text="--"/>
-                            </Grid>
-                            <Grid>
-                                <TextBlock Text="Температура" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                <TextBlock x:Name="TemperatureText" HorizontalAlignment="Right" Text="--"/>
-                            </Grid>
-                            <Grid>
-                                <TextBlock Text="Цикли заряду" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-                                <TextBlock x:Name="CyclesText" HorizontalAlignment="Right" Text="--"/>
-                            </Grid>
-                        </StackPanel>
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Батарея" Style="{StaticResource CardTitleStyle}"/>
+                                <Grid><TextBlock Text="Температура" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="TemperatureText" Style="{StaticResource StatValueStyle}"/></Grid>
+                                <Grid><TextBlock Text="Стан (SOH)" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="SohText" Style="{StaticResource StatValueStyle}"/></Grid>
+                                <Grid><TextBlock Text="Цикли" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="CyclesText" Style="{StaticResource StatValueStyle}"/></Grid>
+                                <Grid><TextBlock Text="Модель" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="ModelText" Style="{StaticResource StatValueStyle}"/></Grid>
+                                <Grid><TextBlock Text="Серійний номер" Style="{StaticResource StatLabelStyle}"/><TextBlock x:Name="SerialNumberText" Style="{StaticResource StatValueStyle}" IsTextSelectionEnabled="True"/></Grid>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
-                </Border>
-            </StackPanel>
-        </ScrollViewer>
+                </ScrollViewer>
+            </PivotItem>
+
+            <!-- Керування: картки секцій будуються в code-behind з IDeviceProtocol.GetControls -->
+            <PivotItem Header="Керування">
+                <ScrollViewer>
+                    <StackPanel Spacing="12" Padding="0,8,0,16" MaxWidth="720" HorizontalAlignment="Stretch">
+                        <TextBlock x:Name="OfflineWarningText"
+                                   Text="Станція не на зв'язку — команди можуть не дійти."
+                                   Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                   TextWrapping="Wrap" Visibility="Collapsed"/>
+                        <InfoBar x:Name="CommandErrorBar" Severity="Error" IsOpen="False"
+                                 Title="Команду не надіслано" Message="Немає з'єднання з хмарою"/>
+                        <StackPanel x:Name="ControlsPanel" Spacing="12"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+
+            <!-- Графіки -->
+            <PivotItem Header="Графіки">
+                <ScrollViewer>
+                    <views:HistoryPanel x:Name="History" Padding="0,8,0,16" MaxWidth="900" HorizontalAlignment="Stretch"/>
+                </ScrollViewer>
+            </PivotItem>
+
+            <!-- Сирі дані -->
+            <PivotItem Header="Дані">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="8" Padding="0,8,0,16">
+                        <TextBlock x:Name="RawHeaderText" TextWrapping="Wrap" FontSize="12"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock x:Name="RawDataText" FontFamily="Consolas" FontSize="12" IsTextSelectionEnabled="True"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+        </Pivot>
     </Grid>
 </Page>
